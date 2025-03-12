@@ -21,6 +21,12 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
   
   const { position, getCurrentPosition } = useGeolocation();
 
+  // Функция для преобразования координат из строки в число
+  const parseCoordinate = (coordStr: string): number => {
+    // Заменяем запятую на точку для правильного парсинга
+    return parseFloat(coordStr.replace(',', '.'));
+  };
+
   // Load point data when the modal opens
   useEffect(() => {
     if (point) {
@@ -38,26 +44,35 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
     if (!point) return;
     
     if (!name.trim()) {
-      toast.error('Please enter a checkpoint name');
+      toast.error('Будь ласка, введіть назву точки');
       return;
     }
     
     if (!latitude || !longitude) {
-      toast.error('Please set the location coordinates');
+      toast.error('Будь ласка, вкажіть координати місцезнаходження');
+      return;
+    }
+    
+    // Проверка координат
+    const lat = parseCoordinate(latitude);
+    const lng = parseCoordinate(longitude);
+    
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      toast.error('Неправильний формат координат. Перевірте введені дані.');
       return;
     }
     
     const radius = parseInt(radiusMeters);
     if (isNaN(radius) || radius <= 0) {
-      toast.error('Please enter a valid radius (greater than 0)');
+      toast.error('Будь ласка, введіть дійсний радіус (більше 0)');
       return;
     }
     
     onSave(point.id, {
       name: name.trim(),
       description: description.trim(),
-      latitude: parseFloat(latitude),
-      longitude: parseFloat(longitude),
+      latitude: lat,
+      longitude: lng,
       radiusMeters: radius,
     });
     
@@ -69,7 +84,7 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
     if (position) {
       setLatitude(position.latitude.toString());
       setLongitude(position.longitude.toString());
-      toast.success('Current location set');
+      toast.success('Поточне місцезнаходження встановлено');
     }
   };
   
@@ -87,7 +102,7 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
       <div className="bg-card border shadow-lg rounded-lg w-full max-w-md animate-slide-up">
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-medium">Edit Checkpoint</h2>
+          <h2 className="text-lg font-medium">Редагувати точку</h2>
           <button 
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground p-1 rounded-full"
@@ -99,7 +114,7 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
             <label htmlFor="name" className="label block mb-1">
-              Name
+              Назва
             </label>
             <input
               id="name"
@@ -107,14 +122,14 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
               className="input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Checkpoint name"
+              placeholder="Назва точки"
               required
             />
           </div>
           
           <div>
             <label htmlFor="description" className="label block mb-1">
-              Description (optional)
+              Опис (необов'язково)
             </label>
             <input
               id="description"
@@ -122,14 +137,14 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
               className="input"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional description"
+              placeholder="Додатковий опис"
             />
           </div>
           
           <div className="flex space-x-4">
             <div className="flex-1">
               <label htmlFor="latitude" className="label block mb-1">
-                Latitude
+                Широта
               </label>
               <input
                 id="latitude"
@@ -137,13 +152,13 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
                 className="input"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
-                placeholder="Latitude"
+                placeholder="Широта"
                 required
               />
             </div>
             <div className="flex-1">
               <label htmlFor="longitude" className="label block mb-1">
-                Longitude
+                Довгота
               </label>
               <input
                 id="longitude"
@@ -151,7 +166,7 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
                 className="input"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
-                placeholder="Longitude"
+                placeholder="Довгота"
                 required
               />
             </div>
@@ -163,13 +178,13 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
               onClick={handleGetCurrentLocation}
               className="btn-secondary text-sm mb-4 w-full"
             >
-              Use Current Location
+              Використати поточне місцезнаходження
             </button>
           </div>
           
           <div>
             <label htmlFor="radiusMeters" className="label block mb-1">
-              Verification Radius (meters)
+              Радіус перевірки (метри)
             </label>
             <input
               id="radiusMeters"
@@ -184,10 +199,10 @@ const EditPointModal = ({ isOpen, onClose, onSave, point }: EditPointModalProps)
           
           <div className="flex space-x-3 pt-2">
             <button type="button" onClick={onClose} className="btn-outline flex-1">
-              Cancel
+              Скасувати
             </button>
             <button type="submit" className="btn-primary flex-1">
-              Save Changes
+              Зберегти зміни
             </button>
           </div>
         </form>

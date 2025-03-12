@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -30,6 +29,12 @@ export type PatrolSession = {
   completedPoints: string[];
 };
 
+type Settings = {
+  verificationMethod: 'gps' | 'qrcode' | 'manual';
+  notificationsEnabled: boolean;
+  proximityThreshold: number;
+};
+
 type PatrolContextType = {
   patrolPoints: PatrolPoint[];
   addPatrolPoint: (point: Omit<PatrolPoint, 'id'>) => void;
@@ -40,17 +45,13 @@ type PatrolContextType = {
   completePatrolPoint: (pointId: string) => void;
   endPatrol: () => void;
   logEntries: LogEntry[];
-  settings: {
-    verificationMethod: 'gps' | 'qrcode' | 'manual';
-    notificationsEnabled: boolean;
-    proximityThreshold: number;
-  };
-  updateSettings: (newSettings: Partial<typeof settings>) => void;
+  settings: Settings;
+  updateSettings: (newSettings: Partial<Settings>) => void;
   loading: boolean;
 };
 
-const defaultSettings = {
-  verificationMethod: 'gps' as const,
+const defaultSettings: Settings = {
+  verificationMethod: 'gps',
   notificationsEnabled: true,
   proximityThreshold: 50, // meters
 };
@@ -73,7 +74,7 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [settings, setSettings] = useState(() => {
+  const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem('patrolSettings');
     return saved ? JSON.parse(saved) : defaultSettings;
   });
@@ -218,9 +219,9 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   // Update settings
-  const updateSettings = (newSettings: Partial<typeof settings>) => {
+  const updateSettings = (newSettings: Partial<Settings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
-    toast.success('Settings updated');
+    toast.success('Налаштування оновлено');
   };
 
   const value = {

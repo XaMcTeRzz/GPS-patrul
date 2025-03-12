@@ -17,7 +17,7 @@ const Navbar = () => {
           end
         >
           <MapPin className="h-5 w-5 mb-1" />
-          <span className="text-xs">Home</span>
+          <span className="text-xs">Головна</span>
         </NavLink>
         
         <NavLink 
@@ -27,7 +27,7 @@ const Navbar = () => {
           }
         >
           <List className="h-5 w-5 mb-1" />
-          <span className="text-xs">Routes</span>
+          <span className="text-xs">Маршрути</span>
         </NavLink>
         
         <NavLink 
@@ -37,7 +37,7 @@ const Navbar = () => {
           }
         >
           <Clock className="h-5 w-5 mb-1" />
-          <span className="text-xs">Log</span>
+          <span className="text-xs">Журнал</span>
         </NavLink>
         
         <NavLink 
@@ -47,7 +47,7 @@ const Navbar = () => {
           }
         >
           <Settings className="h-5 w-5 mb-1" />
-          <span className="text-xs">Settings</span>
+          <span className="text-xs">Налаштування</span>
         </NavLink>
       </div>
     </nav>

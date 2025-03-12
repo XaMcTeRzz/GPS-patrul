@@ -81,43 +81,30 @@ const Patrol = () => {
     const point = activePatrol.patrolPoints.find(p => p.id === pointId);
     if (!point) return;
     
-    if (settings.verificationMethod === 'gps') {
-      if (!position) {
-        toast.error('Waiting for your location...');
-        return;
-      }
-      
-      if (isWithinRadius(point.latitude, point.longitude, point.radiusMeters)) {
-        completePatrolPoint(pointId);
-        setRemainingPoints(prev => prev.filter(id => id !== pointId));
-        
-        if (remainingPoints.length <= 1) {
-          toast.success('All checkpoints verified!');
-          setTimeout(() => {
-            endPatrol();
-            navigate('/');
-          }, 1500);
-        }
-      } else {
-        toast.error('You are not within range of this checkpoint');
-      }
-    } else {
-      // For manual verification
+    // Всегда проверяем местоположение независимо от настроек
+    if (!position) {
+      toast.error('Очікуємо на ваше місцезнаходження...');
+      return;
+    }
+    
+    if (isWithinRadius(point.latitude, point.longitude, point.radiusMeters)) {
       completePatrolPoint(pointId);
       setRemainingPoints(prev => prev.filter(id => id !== pointId));
       
       if (remainingPoints.length <= 1) {
-        toast.success('All checkpoints verified!');
+        toast.success('Всі точки перевірено!');
         setTimeout(() => {
           endPatrol();
           navigate('/');
         }, 1500);
       }
+    } else {
+      toast.error('Ви не знаходитесь у радіусі цієї точки');
     }
   };
 
   const handleEndPatrol = () => {
-    if (window.confirm('Are you sure you want to end this patrol? Unverified checkpoints will be marked as missed.')) {
+    if (window.confirm('Ви впевнені, що хочете завершити обхід? Неперевірені точки будуть позначені як пропущені.')) {
       endPatrol();
       navigate('/');
     }
@@ -128,7 +115,7 @@ const Patrol = () => {
   return (
     <div className="patrol-container pb-20">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Active Patrol</h1>
+        <h1 className="text-2xl font-bold">Активний обхід</h1>
         <div className="flex justify-between items-center mt-2">
           <div className="flex items-center text-muted-foreground">
             <Timer className="h-4 w-4 mr-1.5" />
@@ -136,7 +123,7 @@ const Patrol = () => {
           </div>
           <div className="flex items-center">
             <span className="text-sm text-muted-foreground mr-1">
-              {activePatrol.completedPoints.length}/{activePatrol.patrolPoints.length} verified
+              {activePatrol.completedPoints.length}/{activePatrol.patrolPoints.length} перевірено
             </span>
           </div>
         </div>
@@ -146,11 +133,11 @@ const Patrol = () => {
         <div className="flex justify-between items-center bg-secondary p-3 rounded-lg mb-3">
           <div className="flex items-center">
             <MapPin className="h-5 w-5 mr-2 text-primary" />
-            <span className="font-medium">Checkpoints</span>
+            <span className="font-medium">Точки</span>
           </div>
           <div>
             <span className="text-sm bg-primary/20 text-primary px-2 py-1 rounded-full">
-              {remainingPoints.length} remaining
+              {remainingPoints.length} залишилось
             </span>
           </div>
         </div>
@@ -173,7 +160,7 @@ const Patrol = () => {
           onClick={handleEndPatrol}
           className="btn-outline text-destructive border-destructive w-full"
         >
-          End Patrol
+          Завершити обхід
         </button>
       </div>
 
