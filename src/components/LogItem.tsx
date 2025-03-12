@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { type LogEntry } from '@/types/patrol-types';
@@ -7,10 +8,9 @@ interface LogItemProps {
 }
 
 const LogItem = ({ entry }: LogItemProps) => {
-  // Format timestamp
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('default', {
+    return new Intl.DateTimeFormat('uk', {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
@@ -21,23 +21,28 @@ const LogItem = ({ entry }: LogItemProps) => {
 
   let icon;
   let statusColor;
+  let statusText;
 
   switch (entry.status) {
     case 'completed':
       icon = <CheckCircle className="h-5 w-5" />;
       statusColor = 'text-green-500 bg-green-100 dark:bg-green-900/30';
+      statusText = 'Виконано';
       break;
     case 'missed':
       icon = <AlertCircle className="h-5 w-5" />;
       statusColor = 'text-red-500 bg-red-100 dark:bg-red-900/30';
+      statusText = 'Пропущено';
       break;
     case 'delayed':
       icon = <Clock className="h-5 w-5" />;
       statusColor = 'text-amber-500 bg-amber-100 dark:bg-amber-900/30';
+      statusText = 'Затримка';
       break;
     default:
       icon = <Clock className="h-5 w-5" />;
       statusColor = 'text-muted-foreground bg-muted';
+      statusText = 'В процесі';
   }
 
   return (
@@ -50,7 +55,7 @@ const LogItem = ({ entry }: LogItemProps) => {
           <div>
             <h3 className="font-medium">{entry.pointName}</h3>
             <p className="text-xs text-muted-foreground mt-1">
-              <span>Patrol #{entry.patrolId.slice(-4)}</span>
+              <span>Обхід #{entry.patrolId.slice(-4)}</span>
             </p>
           </div>
         </div>
@@ -61,7 +66,7 @@ const LogItem = ({ entry }: LogItemProps) => {
       
       <div className="mt-2 pl-10">
         <span className={`text-xs py-1 px-2 rounded-full inline-block font-medium capitalize ${statusColor}`}>
-          {entry.status}
+          {statusText}
         </span>
         {entry.notes && (
           <p className="text-sm text-muted-foreground mt-2">{entry.notes}</p>

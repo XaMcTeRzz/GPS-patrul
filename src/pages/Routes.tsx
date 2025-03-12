@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
@@ -20,7 +21,7 @@ const Routes = () => {
   };
 
   const handleDeletePoint = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this checkpoint?')) {
+    if (window.confirm('Ви впевнені, що хочете видалити цю точку?')) {
       deletePatrolPoint(id);
     }
   };
@@ -28,27 +29,27 @@ const Routes = () => {
   return (
     <div className="patrol-container pb-20">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Patrol Routes</h1>
+        <h1 className="text-2xl font-bold">Маршрути обходу</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
           className="btn-primary flex items-center"
         >
           <Plus className="h-4 w-4 mr-1.5" />
-          Add Checkpoint
+          Додати точку
         </button>
       </div>
 
       {patrolPoints.length === 0 ? (
         <div className="bg-card border rounded-lg p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">No checkpoints added yet</h3>
+          <h3 className="text-lg font-medium mb-2">Ще немає точок обходу</h3>
           <p className="text-muted-foreground mb-4">
-            Add checkpoints to create a patrol route
+            Додайте точки, щоб створити маршрут обходу
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
             className="btn-primary"
           >
-            Add First Checkpoint
+            Додати першу точку
           </button>
         </div>
       ) : (
@@ -64,14 +65,12 @@ const Routes = () => {
         </div>
       )}
 
-      {/* Add Point Modal */}
       <AddPointModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={addPatrolPoint}
       />
 
-      {/* Edit Point Modal */}
       <EditPointModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}

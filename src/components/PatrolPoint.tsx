@@ -42,11 +42,11 @@ const PatrolPoint = ({
             <h3 className="font-medium text-card-foreground">{point.name}</h3>
             <p className="text-sm text-muted-foreground mt-1">{point.description}</p>
             <div className="flex items-center mt-2 text-xs text-muted-foreground">
-              <span>Lat: {point.latitude.toFixed(6)}</span>
+              <span>Шир.: {point.latitude.toFixed(6)}</span>
               <span className="mx-2">•</span>
-              <span>Lng: {point.longitude.toFixed(6)}</span>
+              <span>Дов.: {point.longitude.toFixed(6)}</span>
               <span className="mx-2">•</span>
-              <span>Radius: {point.radiusMeters}m</span>
+              <span>Радіус: {point.radiusMeters}м</span>
             </div>
           </div>
         </div>
@@ -57,14 +57,14 @@ const PatrolPoint = ({
               <button
                 onClick={() => onEdit(point)}
                 className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
-                aria-label="Edit"
+                aria-label="Редагувати"
               >
                 <Edit className="h-4 w-4" />
               </button>
               <button
                 onClick={() => onDelete(point.id)}
                 className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                aria-label="Delete"
+                aria-label="Видалити"
               >
                 <Trash className="h-4 w-4" />
               </button>
@@ -76,13 +76,13 @@ const PatrolPoint = ({
               onClick={onVerify}
               className="btn-primary text-xs py-1.5"
             >
-              Verify
+              На точці
             </button>
           )}
           
           {isVerifiable && isCompleted && (
             <span className="text-xs text-green-600 dark:text-green-400 font-medium bg-green-100 dark:bg-green-900/40 px-2.5 py-1 rounded-full">
-              Verified
+              Перевірено
             </span>
           )}
         </div>
