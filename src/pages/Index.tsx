@@ -1,15 +1,17 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, List, Clock, Settings, Play } from 'lucide-react';
+import { MapPin, List, Clock, Settings, Play, Timer } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
+import { toast } from 'sonner';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { patrolPoints, activePatrol, startPatrol } = usePatrol();
+  const { patrolPoints, activePatrol, startPatrol, settings } = usePatrol();
 
   const handleStartPatrol = () => {
     if (patrolPoints.length === 0) {
+      toast.error('Додайте хоча б одну точку маршруту');
       navigate('/routes');
       return;
     }
@@ -17,7 +19,7 @@ const Index = () => {
     navigate('/patrol');
   };
 
-  // If there's already an active patrol, redirect to patrol screen
+  // Якщо є активний обхід, перенаправляємо на екран обходу
   useEffect(() => {
     if (activePatrol) {
       navigate('/patrol');
@@ -27,8 +29,8 @@ const Index = () => {
   return (
     <div className="patrol-container pb-20">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">Patrol Manager</h1>
-        <p className="text-muted-foreground">Monitor and control security patrols</p>
+        <h1 className="text-3xl font-bold mb-2">Контроль обходу</h1>
+        <p className="text-muted-foreground">Система контролю охорони території</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 max-w-md mx-auto">
@@ -36,10 +38,13 @@ const Index = () => {
           onClick={handleStartPatrol}
           className="flex flex-col items-center justify-center p-8 bg-primary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-all"
         >
-          <Play className="h-12 w-12 mb-4" />
-          <span className="text-xl font-medium">Start Patrol</span>
+          <Timer className="h-12 w-12 mb-4" />
+          <span className="text-xl font-medium">Почати обхід</span>
+          <span className="text-sm mt-2">
+            {settings.patrolTimeMinutes} хв. на обхід
+          </span>
           {patrolPoints.length === 0 && (
-            <span className="text-sm mt-2 opacity-80">Add checkpoints first</span>
+            <span className="text-sm mt-2 opacity-80">Спочатку додайте точки</span>
           )}
         </button>
 
@@ -49,9 +54,9 @@ const Index = () => {
             className="bg-card border hover:border-primary/50 p-6 rounded-xl card-hover"
           >
             <List className="h-8 w-8 mb-3 mx-auto text-primary" />
-            <h2 className="text-lg font-medium">Routes</h2>
+            <h2 className="text-lg font-medium">Маршрути</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              {patrolPoints.length} checkpoints
+              {patrolPoints.length} точок
             </p>
           </button>
 
@@ -60,9 +65,9 @@ const Index = () => {
             className="bg-card border hover:border-primary/50 p-6 rounded-xl card-hover"
           >
             <Clock className="h-8 w-8 mb-3 mx-auto text-primary" />
-            <h2 className="text-lg font-medium">Log</h2>
+            <h2 className="text-lg font-medium">Журнал</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              View patrol history
+              Історія обходів
             </p>
           </button>
 
@@ -71,9 +76,9 @@ const Index = () => {
             className="bg-card border hover:border-primary/50 p-6 rounded-xl card-hover col-span-2"
           >
             <Settings className="h-8 w-8 mb-3 mx-auto text-primary" />
-            <h2 className="text-lg font-medium">Settings</h2>
+            <h2 className="text-lg font-medium">Налаштування</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Configure patrol parameters
+              Параметри обходу
             </p>
           </button>
         </div>

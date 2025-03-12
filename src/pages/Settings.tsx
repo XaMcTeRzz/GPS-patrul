@@ -2,6 +2,7 @@
 import React from 'react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
+import { Check } from 'lucide-react';
 
 const Settings = () => {
   const { settings, updateSettings } = usePatrol();
@@ -10,8 +11,11 @@ const Settings = () => {
     updateSettings({ verificationMethod: method });
   };
 
-  const handleNotificationsToggle = () => {
-    updateSettings({ notificationsEnabled: !settings.notificationsEnabled });
+  const handlePatrolTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      updateSettings({ patrolTimeMinutes: value });
+    }
   };
 
   const handleProximityThresholdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,13 +25,21 @@ const Settings = () => {
     }
   };
 
+  const handleNotificationEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({ notificationEmail: e.target.value });
+  };
+
+  const handleTelegramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({ telegramBotToken: e.target.value });
+  };
+
   return (
     <div className="patrol-container pb-20">
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+      <h1 className="text-2xl font-bold mb-6">Налаштування</h1>
 
       <div className="space-y-6">
         <div className="bg-card border rounded-lg p-4">
-          <h2 className="text-lg font-medium mb-4">Checkpoint Verification</h2>
+          <h2 className="text-lg font-medium mb-4">Перевірка точок</h2>
           
           <div className="space-y-3">
             <label className="flex items-center space-x-3">
@@ -38,7 +50,7 @@ const Settings = () => {
                 onChange={() => handleVerificationMethodChange('gps')}
                 className="h-4 w-4 text-primary"
               />
-              <span>GPS Location</span>
+              <span>GPS локація</span>
             </label>
             
             <label className="flex items-center space-x-3 opacity-50 cursor-not-allowed">
@@ -48,7 +60,7 @@ const Settings = () => {
                 disabled
                 className="h-4 w-4"
               />
-              <span>QR Code (coming soon)</span>
+              <span>QR код (скоро)</span>
             </label>
             
             <label className="flex items-center space-x-3">
@@ -59,55 +71,88 @@ const Settings = () => {
                 onChange={() => handleVerificationMethodChange('manual')}
                 className="h-4 w-4 text-primary"
               />
-              <span>Manual Verification</span>
+              <span>Ручна перевірка</span>
             </label>
           </div>
         </div>
 
         <div className="bg-card border rounded-lg p-4">
-          <h2 className="text-lg font-medium mb-4">GPS Settings</h2>
+          <h2 className="text-lg font-medium mb-4">Час обходу</h2>
+          
+          <div>
+            <label htmlFor="patrolTime" className="block text-sm font-medium mb-1">
+              Час на обхід (хвилини)
+            </label>
+            <input
+              id="patrolTime"
+              type="number"
+              min="1"
+              value={settings.patrolTimeMinutes}
+              onChange={handlePatrolTimeChange}
+              className="input w-full"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Рекомендований час: 5-15 хвилин
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-card border rounded-lg p-4">
+          <h2 className="text-lg font-medium mb-4">GPS налаштування</h2>
+          
+          <div>
+            <label htmlFor="proximityThreshold" className="block text-sm font-medium mb-1">
+              Радіус перевірки (метри)
+            </label>
+            <input
+              id="proximityThreshold"
+              type="number"
+              min="1"
+              value={settings.proximityThreshold}
+              onChange={handleProximityThresholdChange}
+              className="input w-full"
+            />
+          </div>
+        </div>
+
+        <div className="bg-card border rounded-lg p-4">
+          <h2 className="text-lg font-medium mb-4">Сповіщення</h2>
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="proximityThreshold" className="block text-sm font-medium mb-1">
-                Proximity Threshold (meters)
+              <label htmlFor="notificationEmail" className="block text-sm font-medium mb-1">
+                Email для сповіщень
               </label>
               <input
-                id="proximityThreshold"
-                type="number"
-                min="1"
-                value={settings.proximityThreshold}
-                onChange={handleProximityThresholdChange}
+                id="notificationEmail"
+                type="email"
+                value={settings.notificationEmail || ''}
+                onChange={handleNotificationEmailChange}
                 className="input w-full"
+                placeholder="example@domain.com"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Distance within which a checkpoint is considered reached
-              </p>
+            </div>
+            
+            <div>
+              <label htmlFor="telegramToken" className="block text-sm font-medium mb-1">
+                Telegram Bot Token
+              </label>
+              <input
+                id="telegramToken"
+                type="text"
+                value={settings.telegramBotToken || ''}
+                onChange={handleTelegramChange}
+                className="input w-full"
+                placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+              />
             </div>
           </div>
         </div>
 
         <div className="bg-card border rounded-lg p-4">
-          <h2 className="text-lg font-medium mb-4">Notifications</h2>
-          
-          <div className="flex items-center justify-between">
-            <span>Enable Notifications</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notificationsEnabled}
-                onChange={handleNotificationsToggle}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-            </label>
-          </div>
-        </div>
-
-        <div className="bg-card border rounded-lg p-4">
-          <h2 className="text-lg font-medium mb-2">About</h2>
+          <h2 className="text-lg font-medium mb-2">Про програму</h2>
           <p className="text-sm text-muted-foreground">
-            Patrol Manager v1.0
+            Контроль обходу v1.0
           </p>
         </div>
       </div>

@@ -33,6 +33,16 @@ type Settings = {
   verificationMethod: 'gps' | 'qrcode' | 'manual';
   notificationsEnabled: boolean;
   proximityThreshold: number;
+  patrolTimeMinutes: number;
+  notificationEmail?: string;
+  telegramBotToken?: string;
+};
+
+const defaultSettings: Settings = {
+  verificationMethod: 'gps',
+  notificationsEnabled: true,
+  proximityThreshold: 50,
+  patrolTimeMinutes: 5,
 };
 
 type PatrolContextType = {
@@ -48,12 +58,6 @@ type PatrolContextType = {
   settings: Settings;
   updateSettings: (newSettings: Partial<Settings>) => void;
   loading: boolean;
-};
-
-const defaultSettings: Settings = {
-  verificationMethod: 'gps',
-  notificationsEnabled: true,
-  proximityThreshold: 50, // meters
 };
 
 const PatrolContext = createContext<PatrolContextType | undefined>(undefined);
