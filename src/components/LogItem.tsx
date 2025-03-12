@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import { LogEntry } from '@/context/PatrolContext';
+import { type LogEntry } from '@/types/patrol-types';
 
 interface LogItemProps {
   entry: LogEntry;

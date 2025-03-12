@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
@@ -6,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import PatrolPoint from '@/components/PatrolPoint';
 import AddPointModal from '@/components/AddPointModal';
 import EditPointModal from '@/components/EditPointModal';
-import { PatrolPoint as PatrolPointType } from '@/context/PatrolContext';
+import { type PatrolPoint as PatrolPointType } from '@/types/patrol-types';
 
 const Routes = () => {
   const { patrolPoints, addPatrolPoint, updatePatrolPoint, deletePatrolPoint } = usePatrol();

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { PatrolPoint } from '@/context/PatrolContext';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { type PatrolPoint } from '@/types/patrol-types';
 import { toast } from 'sonner';
 
 interface EditPointModalProps {

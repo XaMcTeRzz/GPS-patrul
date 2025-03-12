@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Edit, Trash, MapPin } from 'lucide-react';
-import { type PatrolPoint as PatrolPointType } from '@/context/PatrolContext';
+import { type PatrolPoint as PatrolPointType } from '@/types/patrol-types';
 
 interface PatrolPointProps {
   point: PatrolPointType;
