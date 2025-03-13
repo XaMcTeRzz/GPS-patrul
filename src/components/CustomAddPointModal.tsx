@@ -24,7 +24,7 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
   const [timeMinutes, setTimeMinutes] = useState<number>(5);
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
 
-  const { position } = useGeolocation({
+  const { position, getCurrentPosition } = useGeolocation({
     enableHighAccuracy: true,
     maximumAge: 10000,
     timeout: 15000
@@ -40,8 +40,19 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
       setRadiusMeters(50);
       setTimeMinutes(5);
       setIsUsingCurrentLocation(false);
+      
+      // Get current position when modal opens
+      getCurrentPosition();
     }
-  }, [isOpen]);
+  }, [isOpen, getCurrentPosition]);
+  
+  // Update position when it changes
+  useEffect(() => {
+    if (position && isUsingCurrentLocation) {
+      setLatitude(position.latitude);
+      setLongitude(position.longitude);
+    }
+  }, [position, isUsingCurrentLocation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +71,10 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
     if (position) {
       setLatitude(position.latitude);
       setLongitude(position.longitude);
+      setIsUsingCurrentLocation(true);
+    } else {
+      // If position is not available yet, try to get it
+      getCurrentPosition();
       setIsUsingCurrentLocation(true);
     }
   };
