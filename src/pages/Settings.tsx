@@ -29,8 +29,12 @@ const Settings = () => {
     updateSettings({ notificationEmail: e.target.value });
   };
 
-  const handleTelegramChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTelegramBotTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateSettings({ telegramBotToken: e.target.value });
+  };
+
+  const handleTelegramChatIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({ telegramChatId: e.target.value });
   };
 
   return (
@@ -94,6 +98,9 @@ const Settings = () => {
             <p className="text-xs text-muted-foreground mt-1">
               Рекомендований час: 5-15 хвилин
             </p>
+            <p className="text-xs text-amber-500 mt-2">
+              ⚠️ Сповіщення про пропущені точки будуть відправлені після {settings.patrolTimeMinutes} хвилин
+            </p>
           </div>
         </div>
 
@@ -131,6 +138,9 @@ const Settings = () => {
                 className="input w-full"
                 placeholder="example@domain.com"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Буде використано для сповіщень про пропущені точки
+              </p>
             </div>
             
             <div>
@@ -141,10 +151,33 @@ const Settings = () => {
                 id="telegramToken"
                 type="text"
                 value={settings.telegramBotToken || ''}
-                onChange={handleTelegramChange}
+                onChange={handleTelegramBotTokenChange}
                 className="input w-full"
                 placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Потрібно створити бота через @BotFather
+              </p>
+            </div>
+            
+            <div>
+              <label htmlFor="telegramChatId" className="block text-sm font-medium mb-1">
+                Telegram Chat ID
+              </label>
+              <input
+                id="telegramChatId"
+                type="text"
+                value={settings.telegramChatId || ''}
+                onChange={handleTelegramChatIdChange}
+                className="input w-full"
+                placeholder="123456789"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                ID чату або групи для отримання сповіщень
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Можна отримати через бота @userinfobot
+              </p>
             </div>
           </div>
         </div>

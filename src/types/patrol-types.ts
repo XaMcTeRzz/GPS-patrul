@@ -35,6 +35,7 @@ export type Settings = {
   patrolTimeMinutes: number;
   notificationEmail?: string;
   telegramBotToken?: string;
+  telegramChatId?: string;
 };
 
 export type PatrolContextType = {

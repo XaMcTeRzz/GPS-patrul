@@ -20,15 +20,19 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const { logEntries, setLogEntries, addLogEntry } = usePatrolLogs();
   
+  const { settings, setSettings, updateSettings } = usePatrolSettings();
+  
   const { 
     activePatrol, 
     setActivePatrol, 
     startPatrol, 
     completePatrolPoint, 
     endPatrol 
-  } = usePatrolSession({ patrolPoints, addLogEntry });
-  
-  const { settings, setSettings, updateSettings } = usePatrolSettings();
+  } = usePatrolSession({ 
+    patrolPoints, 
+    addLogEntry,
+    settings
+  });
 
   // Save to localStorage whenever state changes
   useEffect(() => {
