@@ -11,7 +11,12 @@ export const usePatrolSettings = () => {
 
   // Update settings
   const updateSettings = (newSettings: Partial<Settings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      // Save to local storage
+      localStorage.setItem('patrolSettings', JSON.stringify(updated));
+      return updated;
+    });
     toast.success('Налаштування оновлено');
   };
 

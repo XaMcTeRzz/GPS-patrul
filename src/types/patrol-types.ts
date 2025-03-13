@@ -28,6 +28,14 @@ export type PatrolSession = {
   completedPoints: string[];
 };
 
+export type SmtpSettings = {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  from: string;
+};
+
 export type Settings = {
   verificationMethod: 'gps' | 'qrcode' | 'manual';
   notificationsEnabled: boolean;
@@ -36,6 +44,7 @@ export type Settings = {
   notificationEmail?: string;
   telegramBotToken?: string;
   telegramChatId?: string;
+  smtpSettings?: SmtpSettings;
 };
 
 export type PatrolContextType = {

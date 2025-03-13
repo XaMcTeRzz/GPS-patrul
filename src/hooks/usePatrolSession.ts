@@ -45,10 +45,16 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
     // Add to completed points
     setActivePatrol((prev) => {
       if (!prev) return null;
-      return {
+      
+      const updated = {
         ...prev,
         completedPoints: [...prev.completedPoints, pointId],
       };
+      
+      // Update in localStorage
+      localStorage.setItem('activePatrol', JSON.stringify(updated));
+      
+      return updated;
     });
 
     // Create a log entry
@@ -90,22 +96,30 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
               settings.telegramBotToken,
               settings.telegramChatId,
               settings.notificationEmail,
-              point.name
+              point.name,
+              settings.smtpSettings
             );
           }
         });
       }
       
-      return {
+      const updated = {
         ...prev,
         status: 'completed',
         endTime: new Date().toISOString(),
       };
+      
+      // Update in localStorage
+      localStorage.setItem('activePatrol', JSON.stringify(updated));
+      
+      return updated;
     });
 
     // Create a final completed patrol in log
     setTimeout(() => {
       setActivePatrol(null);
+      // Remove from localStorage
+      localStorage.removeItem('activePatrol');
       toast.success('Обхід завершено');
     }, 500);
   };
@@ -119,7 +133,8 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
       timeoutMinutes,
       notificationsEnabled: settings.notificationsEnabled,
       hasTelegramConfig: Boolean(settings.telegramBotToken && settings.telegramChatId),
-      hasEmail: Boolean(settings.notificationEmail)
+      hasEmail: Boolean(settings.notificationEmail),
+      hasSmtpSettings: Boolean(settings.smtpSettings?.host)
     });
     
     // Create a timeout for each patrol point
@@ -145,7 +160,8 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
             settings.telegramBotToken,
             settings.telegramChatId,
             settings.notificationEmail,
-            point.name
+            point.name,
+            settings.smtpSettings
           );
           
           // Add a 'delayed' log entry

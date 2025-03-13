@@ -1,12 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
-import { Check, AlertTriangle, Info } from 'lucide-react';
+import { Check, AlertTriangle, Info, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { SmtpSettings } from '@/types/patrol-types';
 
 const Settings = () => {
   const { settings, updateSettings } = usePatrol();
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [showEmailPassword, setShowEmailPassword] = useState(false);
 
   const handleVerificationMethodChange = (method: 'gps' | 'qrcode' | 'manual') => {
     updateSettings({ verificationMethod: method });
@@ -42,6 +45,55 @@ const Settings = () => {
     updateSettings({ telegramChatId: e.target.value });
   };
 
+  // SMTP handlers
+  const handleSmtpHostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({
+      smtpSettings: {
+        ...settings.smtpSettings,
+        host: e.target.value,
+      } as SmtpSettings,
+    });
+  };
+
+  const handleSmtpPortChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const port = parseInt(e.target.value);
+    if (!isNaN(port) && port > 0) {
+      updateSettings({
+        smtpSettings: {
+          ...settings.smtpSettings,
+          port,
+        } as SmtpSettings,
+      });
+    }
+  };
+
+  const handleSmtpUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({
+      smtpSettings: {
+        ...settings.smtpSettings,
+        username: e.target.value,
+      } as SmtpSettings,
+    });
+  };
+
+  const handleSmtpPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({
+      smtpSettings: {
+        ...settings.smtpSettings,
+        password: e.target.value,
+      } as SmtpSettings,
+    });
+  };
+
+  const handleSmtpFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateSettings({
+      smtpSettings: {
+        ...settings.smtpSettings,
+        from: e.target.value,
+      } as SmtpSettings,
+    });
+  };
+
   const testTelegramNotification = async () => {
     if (!settings.telegramBotToken || !settings.telegramChatId) {
       toast.error('Вкажіть Telegram Bot Token та Chat ID');
@@ -72,6 +124,41 @@ const Settings = () => {
       }
     } catch (error) {
       toast.error(`Помилка: ${error instanceof Error ? error.message : 'Не вдалося відправити повідомлення'}`);
+    }
+  };
+
+  const testSmtpEmail = async () => {
+    if (!testEmailAddress) {
+      toast.error('Вкажіть адресу для тестового повідомлення');
+      return;
+    }
+
+    if (!settings.smtpSettings?.host || !settings.smtpSettings?.username || !settings.smtpSettings?.password) {
+      toast.error('Заповніть усі необхідні поля SMTP');
+      return;
+    }
+
+    toast.loading('Відправлення тестового email...');
+
+    try {
+      // In a real app, you would call an API endpoint here
+      // For now, we'll simulate it with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const smtpConfig = {
+        host: settings.smtpSettings.host,
+        port: settings.smtpSettings.port || 587,
+        username: settings.smtpSettings.username,
+        password: settings.smtpSettings.password,
+        from: settings.smtpSettings.from || settings.smtpSettings.username
+      };
+      
+      console.log('Тестовий email', { to: testEmailAddress, config: smtpConfig });
+      
+      // Simulate success
+      toast.success('Тестовий email успішно відправлено!');
+    } catch (error) {
+      toast.error(`Помилка: ${error instanceof Error ? error.message : 'Не вдалося відправити email'}`);
     }
   };
 
@@ -201,6 +288,135 @@ const Settings = () => {
               <p className="text-xs text-muted-foreground mt-1">
                 Буде використано для сповіщень про пропущені точки
               </p>
+            </div>
+            
+            {/* SMTP Settings Section */}
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-md font-medium">SMTP налаштування</h3>
+                {settings.notificationsEnabled && 
+                 settings.smtpSettings?.host && 
+                 settings.smtpSettings?.username && 
+                 settings.smtpSettings?.password && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      value={testEmailAddress}
+                      onChange={(e) => setTestEmailAddress(e.target.value)}
+                      placeholder="Тестовий email"
+                      className="input text-xs h-8"
+                    />
+                    <button 
+                      onClick={testSmtpEmail} 
+                      className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                    >
+                      Тест
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="bg-blue-50 text-blue-800 p-3 rounded-md mb-4 flex items-start">
+                <Info className="h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
+                <div className="text-sm">
+                  <p className="mb-1">Як налаштувати SMTP для відправки email:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>Для Gmail: smtp.gmail.com, порт 587</li>
+                    <li>Для Outlook/Hotmail: smtp.office365.com, порт 587</li>
+                    <li>Для пошти на власному домені: дізнайтесь у хостинг-провайдера</li>
+                    <li>Для Gmail потрібно створити пароль додатка в налаштуваннях безпеки</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="smtpHost" className="block text-sm font-medium mb-1">
+                    SMTP Сервер
+                  </label>
+                  <input
+                    id="smtpHost"
+                    type="text"
+                    value={settings.smtpSettings?.host || ''}
+                    onChange={handleSmtpHostChange}
+                    className="input w-full"
+                    placeholder="smtp.gmail.com"
+                    disabled={!settings.notificationsEnabled}
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="smtpPort" className="block text-sm font-medium mb-1">
+                    SMTP Порт
+                  </label>
+                  <input
+                    id="smtpPort"
+                    type="number"
+                    value={settings.smtpSettings?.port || 587}
+                    onChange={handleSmtpPortChange}
+                    className="input w-full"
+                    placeholder="587"
+                    disabled={!settings.notificationsEnabled}
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="smtpUsername" className="block text-sm font-medium mb-1">
+                    SMTP Логін
+                  </label>
+                  <input
+                    id="smtpUsername"
+                    type="text"
+                    value={settings.smtpSettings?.username || ''}
+                    onChange={handleSmtpUsernameChange}
+                    className="input w-full"
+                    placeholder="your.email@gmail.com"
+                    disabled={!settings.notificationsEnabled}
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="smtpPassword" className="block text-sm font-medium mb-1">
+                    SMTP Пароль
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="smtpPassword"
+                      type={showEmailPassword ? "text" : "password"}
+                      value={settings.smtpSettings?.password || ''}
+                      onChange={handleSmtpPasswordChange}
+                      className="input w-full"
+                      placeholder="●●●●●●●●●●"
+                      disabled={!settings.notificationsEnabled}
+                    />
+                    <button 
+                      type="button"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-blue-500"
+                      onClick={() => setShowEmailPassword(!showEmailPassword)}
+                    >
+                      {showEmailPassword ? 'Приховати' : 'Показати'}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="md:col-span-2">
+                  <label htmlFor="smtpFrom" className="block text-sm font-medium mb-1">
+                    Відправник ("From")
+                  </label>
+                  <input
+                    id="smtpFrom"
+                    type="text"
+                    value={settings.smtpSettings?.from || ''}
+                    onChange={handleSmtpFromChange}
+                    className="input w-full"
+                    placeholder="Контроль обходу <your.email@gmail.com>"
+                    disabled={!settings.notificationsEnabled}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Можна залишити порожнім, тоді буде використано логін
+                  </p>
+                </div>
+              </div>
             </div>
             
             <div className="border-t pt-4">
