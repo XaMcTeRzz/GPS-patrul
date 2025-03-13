@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, MapPin } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
 import PatrolPoint from '@/components/PatrolPoint';
@@ -27,39 +26,46 @@ const Routes = () => {
   };
 
   return (
-    <div className="patrol-container pb-20">
+    <div className="container pb-20">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Маршрути обходу</h1>
+        <h1 className="text-xl font-bold text-zinc-100">Маршрути обходу</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="btn-primary flex items-center"
+          className="btn-primary text-sm"
         >
-          <Plus className="h-4 w-4 mr-1.5" />
+          <Plus className="h-5 w-5 mr-2 inline-block" />
           Додати точку
         </button>
       </div>
 
       {patrolPoints.length === 0 ? (
-        <div className="bg-card border rounded-lg p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">Ще немає точок обходу</h3>
-          <p className="text-muted-foreground mb-4">
-            Додайте точки, щоб створити маршрут обходу
+        <div className="text-center py-12 bg-[#1A1D24] rounded-lg border border-[#2A2F38]">
+          <div className="mb-4">
+            <MapPin className="h-12 w-12 mx-auto text-blue-400" />
+          </div>
+          <h3 className="text-lg font-medium text-zinc-100 mb-2">Немає точок обходу</h3>
+          <p className="text-sm text-zinc-400 mb-6">
+            Додайте першу точку для створення маршруту
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="btn-primary"
+            className="btn-primary text-sm inline-flex items-center"
           >
-            Додати першу точку
+            <Plus className="h-5 w-5 mr-2" />
+            Додати точку
           </button>
         </div>
       ) : (
-        <div>
+        <div className="space-y-4">
           {patrolPoints.map((point) => (
             <PatrolPoint
               key={point.id}
               point={point}
-              onEdit={handleOpenEditModal}
-              onDelete={handleDeletePoint}
+              onEdit={(point) => {
+                setEditingPoint(point);
+                setIsEditModalOpen(true);
+              }}
+              onDelete={(id) => handleDeletePoint(id)}
             />
           ))}
         </div>

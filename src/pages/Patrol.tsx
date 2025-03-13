@@ -118,40 +118,44 @@ const Patrol = () => {
   return (
     <div className="patrol-container pb-20">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Активний обхід</h1>
-        <div className="flex justify-between items-center mt-3">
-          <div className="flex items-center text-muted-foreground">
-            <Timer className="h-7 w-7 mr-2" />
-            <span className="text-lg">{formatTime(elapsedTime)}</span>
+        <h1 className="text-2xl font-bold text-zinc-100">Активний обхід</h1>
+        <div className="flex justify-between items-center mt-4 bg-[#1A1D24] p-4 rounded-lg border border-[#2A2F38]">
+          <div className="flex items-center">
+            <Timer className="h-6 w-6 mr-3 text-blue-400" />
+            <span className="text-lg font-medium text-zinc-100 tabular-nums">{formatTime(elapsedTime)}</span>
           </div>
           <div className="flex items-center">
-            <span className="text-base text-muted-foreground mr-2">
+            <span className="text-base text-zinc-400 mr-3 tabular-nums">
               {activePatrol.completedPoints.length}/{activePatrol.patrolPoints.length} перевірено
             </span>
             <button 
               onClick={toggleTestMode}
-              className={`ml-3 p-2 rounded-full ${testMode ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}
+              className={`p-2 rounded-lg transition-all ${
+                testMode 
+                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
+                  : 'bg-[#12151A] text-zinc-400 hover:bg-blue-500/10 hover:text-blue-400'
+              }`}
               title={testMode ? 'Вимкнути тестовий режим' : 'Увімкнути тестовий режим'}
             >
-              <Zap className="h-7 w-7" />
+              <Zap className="h-6 w-6" />
             </button>
           </div>
         </div>
         {testMode && (
-          <div className="mt-3 p-4 bg-amber-50 text-amber-700 text-base rounded-md border border-amber-200">
+          <div className="mt-3 p-4 bg-amber-500/10 text-amber-400 text-sm rounded-lg border border-amber-500/20">
             Тестовий режим активний: час очікування скорочено в 10 разів для швидкого тестування
           </div>
         )}
       </div>
 
       <div className="mb-6">
-        <div className="flex justify-between items-center bg-secondary p-5 rounded-lg mb-4">
+        <div className="flex justify-between items-center bg-[#1A1D24] p-5 rounded-lg mb-4 border border-[#2A2F38]">
           <div className="flex items-center">
-            <MapPinned className="h-10 w-10 mr-3 text-primary" />
-            <span className="font-medium text-xl">Точки</span>
+            <MapPinned className="h-8 w-8 mr-3 text-blue-400" />
+            <span className="font-medium text-xl text-zinc-100">Точки</span>
           </div>
           <div>
-            <span className="text-lg bg-primary/20 text-primary px-4 py-2 rounded-full">
+            <span className="text-base bg-[#12151A] text-zinc-100 px-4 py-2 rounded-lg tabular-nums font-medium">
               {remainingPoints.length} залишилось
             </span>
           </div>
@@ -171,7 +175,7 @@ const Patrol = () => {
       <div className="mt-8">
         <button
           onClick={handleEndPatrol}
-          className="btn-outline text-destructive border-destructive w-full text-lg py-4"
+          className="w-full py-4 px-6 text-lg font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors"
         >
           Завершити обхід
         </button>
