@@ -28,12 +28,12 @@ const Routes = () => {
   return (
     <div className="container pb-20">
       <div className="flex justify-between items-center mb-4 sm:mb-6">
-        <h1 className="text-lg sm:text-xl font-medium text-zinc-100">Маршрути обходу</h1>
+        <h1 className="text-xl sm:text-2xl font-medium text-zinc-100">Маршрути обходу</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="btn-primary text-xs sm:text-sm py-2"
+          className="btn-primary text-sm sm:text-base py-2"
         >
-          <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+          <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
           Додати точку
         </button>
       </div>
@@ -41,17 +41,17 @@ const Routes = () => {
       {patrolPoints.length === 0 ? (
         <div className="text-center py-8 sm:py-12 bg-[#1A1D24] rounded-lg border border-[#2A2F38]">
           <div className="mb-4">
-            <MapPin className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-blue-400" />
+            <MapPin className="h-10 w-10 sm:h-14 sm:w-14 mx-auto text-blue-400" />
           </div>
-          <h3 className="text-base sm:text-lg font-medium text-zinc-100 mb-2">Немає точок обходу</h3>
-          <p className="text-xs sm:text-sm text-zinc-400 mb-4 sm:mb-6 px-4">
+          <h3 className="text-lg sm:text-xl font-medium text-zinc-100 mb-2">Немає точок обходу</h3>
+          <p className="text-sm sm:text-base text-zinc-400 mb-4 sm:mb-6 px-4">
             Додайте першу точку для створення маршруту
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="btn-primary text-xs sm:text-sm py-2 inline-flex items-center"
+            className="btn-primary text-sm sm:text-base py-2 inline-flex items-center"
           >
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
             Додати точку
           </button>
         </div>
