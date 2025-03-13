@@ -5,6 +5,9 @@ export type PatrolPoint = {
   description: string;
   latitude: number;
   longitude: number;
+  radius: number;
+  time: number;
+  isCompleted?: boolean;
   radiusMeters: number;
   timeMinutes: number; // Time allowed for this specific point
 };

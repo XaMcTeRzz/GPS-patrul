@@ -1,6 +1,7 @@
 import React from 'react';
-import { Edit, Trash, MapPinned } from 'lucide-react';
+import { Edit, Trash, MapPinned, Edit2, Trash2 } from 'lucide-react';
 import { type PatrolPoint as PatrolPointType } from '@/types/patrol-types';
+import { MapPin, Clock } from 'lucide-react';
 
 interface PatrolPointProps {
   point: PatrolPointType;
@@ -20,70 +21,38 @@ const PatrolPoint = ({
   isCompleted = false,
 }: PatrolPointProps) => {
   return (
-    <div 
-      className={`
-        bg-card border rounded-lg p-8 mb-6 shadow-sm 
-        ${isVerifiable && !isCompleted ? 'card-hover' : ''}
-        ${isCompleted ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ''}
-      `}
-    >
-      <div className="flex justify-between items-start">
-        <div className="flex items-start space-x-4">
-          <div className={`
-            mt-1 p-3 rounded-full 
-            ${isCompleted 
-              ? 'bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400' 
-              : 'bg-primary/10 text-primary'}
-          `}>
-            <MapPinned className="h-10 w-10" />
-          </div>
-          <div>
-            <h3 className="font-medium text-2xl">{point.name}</h3>
-            <p className="text-base text-muted-foreground mt-2">{point.description}</p>
-            <div className="flex items-center mt-3 text-base">
-              <span>Шир.: {point.latitude.toFixed(6)}</span>
-              <span className="mx-3">•</span>
-              <span>Дов.: {point.longitude.toFixed(6)}</span>
-              <span className="mx-3">•</span>
+    <div className={`p-4 sm:p-6 mb-3 sm:mb-4 rounded-lg border ${isCompleted ? 'bg-green-900/20 border-green-400/20' : 'bg-zinc-800 border-zinc-700'}`}>
+      <div className="flex items-start gap-3 sm:gap-4">
+        <div className="flex-shrink-0">
+          <MapPinned className="h-8 w-8 sm:h-10 sm:w-10 text-blue-400" />
+        </div>
+        <div className="flex-grow min-w-0">
+          <h3 className="text-base sm:text-lg font-medium text-zinc-100 mb-1">{point.name}</h3>
+          <p className="text-xs sm:text-sm text-zinc-400 mb-3">{point.description}</p>
+          <div className="flex flex-wrap gap-2 sm:gap-3 text-xs sm:text-sm text-zinc-400">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Радіус: {point.radiusMeters}м</span>
+            </div>
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span>Час: {point.timeMinutes} хв</span>
             </div>
           </div>
         </div>
-
-        <div className="flex space-x-3">
-          {!isVerifiable && (
-            <>
-              <button
-                onClick={() => onEdit(point)}
-                className="p-3 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
-                aria-label="Редагувати"
-              >
-                <Edit className="h-7 w-7" />
-              </button>
-              <button
-                onClick={() => onDelete(point.id)}
-                className="p-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                aria-label="Видалити"
-              >
-                <Trash className="h-7 w-7" />
-              </button>
-            </>
-          )}
-          
-          {isVerifiable && !isCompleted && onVerify && (
-            <button
-              onClick={onVerify}
-              className="btn-primary text-lg py-2 px-4"
-            >
-              На точці
-            </button>
-          )}
-          
-          {isVerifiable && isCompleted && (
-            <span className="text-lg text-green-600 dark:text-green-400 font-medium bg-green-100 dark:bg-green-900/40 px-4 py-2 rounded-full">
-              Перевірено
-            </span>
-          )}
+        <div className="flex flex-shrink-0 gap-2">
+          <button
+            onClick={() => onEdit(point)}
+            className="p-1.5 sm:p-2 rounded-lg hover:bg-zinc-700/50"
+          >
+            <Edit2 className="h-4 w-4 sm:h-5 sm:w-5 text-zinc-400" />
+          </button>
+          <button
+            onClick={() => onDelete(point.id)}
+            className="p-1.5 sm:p-2 rounded-lg hover:bg-zinc-700/50"
+          >
+            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />
+          </button>
         </div>
       </div>
     </div>

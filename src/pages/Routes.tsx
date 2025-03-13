@@ -27,36 +27,36 @@ const Routes = () => {
 
   return (
     <div className="container pb-20">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl font-bold text-zinc-100">Маршрути обходу</h1>
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <h1 className="text-lg sm:text-xl font-medium text-zinc-100">Маршрути обходу</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="btn-primary text-sm"
+          className="btn-primary text-xs sm:text-sm py-2"
         >
-          <Plus className="h-5 w-5 mr-2 inline-block" />
+          <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
           Додати точку
         </button>
       </div>
 
       {patrolPoints.length === 0 ? (
-        <div className="text-center py-12 bg-[#1A1D24] rounded-lg border border-[#2A2F38]">
+        <div className="text-center py-8 sm:py-12 bg-[#1A1D24] rounded-lg border border-[#2A2F38]">
           <div className="mb-4">
-            <MapPin className="h-12 w-12 mx-auto text-blue-400" />
+            <MapPin className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-blue-400" />
           </div>
-          <h3 className="text-lg font-medium text-zinc-100 mb-2">Немає точок обходу</h3>
-          <p className="text-sm text-zinc-400 mb-6">
+          <h3 className="text-base sm:text-lg font-medium text-zinc-100 mb-2">Немає точок обходу</h3>
+          <p className="text-xs sm:text-sm text-zinc-400 mb-4 sm:mb-6 px-4">
             Додайте першу точку для створення маршруту
           </p>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="btn-primary text-sm inline-flex items-center"
+            className="btn-primary text-xs sm:text-sm py-2 inline-flex items-center"
           >
-            <Plus className="h-5 w-5 mr-2" />
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
             Додати точку
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {patrolPoints.map((point) => (
             <PatrolPoint
               key={point.id}
