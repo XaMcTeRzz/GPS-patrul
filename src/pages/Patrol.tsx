@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Check, AlertTriangle, Timer } from 'lucide-react';
+import { MapPin, Check, AlertTriangle, Timer, Clock } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
-import PatrolPoint from '@/components/PatrolPoint';
+import PatrolPointItem from '@/components/PatrolPointItem';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { toast } from 'sonner';
 
@@ -81,7 +81,6 @@ const Patrol = () => {
     const point = activePatrol.patrolPoints.find(p => p.id === pointId);
     if (!point) return;
     
-    // Всегда проверяем местоположение независимо от настроек
     if (!position) {
       toast.error('Очікуємо на ваше місцезнаходження...');
       return;
@@ -143,11 +142,9 @@ const Patrol = () => {
         </div>
 
         {activePatrol.patrolPoints.map((point) => (
-          <PatrolPoint
+          <PatrolPointItem
             key={point.id}
             point={point}
-            onEdit={() => {}}
-            onDelete={() => {}}
             isVerifiable
             onVerify={() => handleVerifyPoint(point.id)}
             isCompleted={activePatrol.completedPoints.includes(point.id)}

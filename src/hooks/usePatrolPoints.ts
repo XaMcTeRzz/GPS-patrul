@@ -17,6 +17,7 @@ export const usePatrolPoints = () => {
     const newPoint = {
       ...point,
       id: Date.now().toString(),
+      timeMinutes: point.timeMinutes || 5, // Default to 5 minutes if not specified
     };
     
     setPatrolPoints((prev) => [...prev, newPoint]);
@@ -53,3 +54,4 @@ export const usePatrolPoints = () => {
     loading,
   };
 };
+

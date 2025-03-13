@@ -1,4 +1,3 @@
-
 // Types for the Patrol system
 export type PatrolPoint = {
   id: string;
@@ -7,6 +6,7 @@ export type PatrolPoint = {
   latitude: number;
   longitude: number;
   radiusMeters: number;
+  timeMinutes: number; // Time allowed for this specific point
 };
 
 export type LogEntry = {
@@ -40,7 +40,7 @@ export type Settings = {
   verificationMethod: 'gps' | 'qrcode' | 'manual';
   notificationsEnabled: boolean;
   proximityThreshold: number;
-  patrolTimeMinutes: number;
+  patrolTimeMinutes: number; // Default time for all points
   notificationEmail?: string;
   telegramBotToken?: string;
   telegramChatId?: string;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { PatrolSession, PatrolPoint, LogEntry, Settings } from '@/types/patrol-types';
@@ -128,9 +127,9 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
   useEffect(() => {
     if (!activePatrol || activePatrol.status !== 'active' || !settings.notificationsEnabled) return;
     
-    const timeoutMinutes = settings.patrolTimeMinutes;
+    const defaultTimeoutMinutes = settings.patrolTimeMinutes;
     console.log('Моніторинг пропущених точок налаштований', { 
-      timeoutMinutes,
+      defaultTimeoutMinutes,
       notificationsEnabled: settings.notificationsEnabled,
       hasTelegramConfig: Boolean(settings.telegramBotToken && settings.telegramChatId),
       hasEmail: Boolean(settings.notificationEmail),
@@ -141,6 +140,11 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
     const timeouts = activePatrol.patrolPoints
       .filter(point => !activePatrol.completedPoints.includes(point.id))
       .map(point => {
+        // Use the point-specific time if available, otherwise use default
+        const timeoutMinutes = point.timeMinutes || defaultTimeoutMinutes;
+        
+        console.log(`Налаштування таймера для точки "${point.name}": ${timeoutMinutes} хвилин`);
+        
         return setTimeout(async () => {
           console.log(`Перевірка точки "${point.name}" через ${timeoutMinutes} хвилин...`);
           

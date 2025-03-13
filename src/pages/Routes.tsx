@@ -4,8 +4,8 @@ import { Plus } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
 import PatrolPoint from '@/components/PatrolPoint';
-import AddPointModal from '@/components/AddPointModal';
-import EditPointModal from '@/components/EditPointModal';
+import CustomAddPointModal from '@/components/CustomAddPointModal';
+import CustomEditPointModal from '@/components/CustomEditPointModal';
 import { type PatrolPoint as PatrolPointType } from '@/types/patrol-types';
 
 const Routes = () => {
@@ -65,13 +65,13 @@ const Routes = () => {
         </div>
       )}
 
-      <AddPointModal
+      <CustomAddPointModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={addPatrolPoint}
       />
 
-      <EditPointModal
+      <CustomEditPointModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSave={updatePatrolPoint}
