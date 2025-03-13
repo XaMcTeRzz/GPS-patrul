@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash, CheckCircle, MapPin, Clock, AlertCircle } from 'lucide-react';
+import { Edit, Trash, CheckCircle, MapPinned, Clock, AlertCircle } from 'lucide-react';
 import { PatrolPoint } from '@/types/patrol-types';
 import { usePatrol } from '@/context/PatrolContext';
 
@@ -80,61 +80,61 @@ const PatrolPointItem: React.FC<PatrolPointItemProps> = ({
   };
 
   return (
-    <div className={`bg-card border rounded-lg p-4 mb-4 ${isCompleted ? 'border-green-500 bg-green-50' : ''}`}>
+    <div className={`bg-card border rounded-lg p-8 mb-6 ${isCompleted ? 'border-green-500 bg-green-50' : ''}`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="font-medium text-lg">{point.name}</h3>
-          <p className="text-sm text-muted-foreground">{point.description}</p>
+          <h3 className="font-medium text-4xl">{point.name}</h3>
+          <p className="text-xl text-muted-foreground mt-3">{point.description}</p>
           
-          <div className="flex flex-wrap gap-3 mt-2">
-            <div className="flex items-center text-sm text-muted-foreground">
-              <MapPin className="h-4 w-4 mr-1" />
+          <div className="flex flex-wrap gap-6 mt-4">
+            <div className="flex items-center text-xl text-muted-foreground">
+              <MapPinned className="h-16 w-16 mr-3" />
               <span>Радіус: {point.radiusMeters}м</span>
             </div>
             
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Clock className="h-4 w-4 mr-1" />
+            <div className="flex items-center text-xl text-muted-foreground">
+              <Clock className="h-10 w-10 mr-3" />
               <span>Час: {point.timeMinutes} хв</span>
             </div>
             
             {isVerifiable && !isCompleted && remainingTime !== null && (
-              <div className={`flex items-center text-sm px-2 py-0.5 rounded-full ${getTimeIndicatorColor()}`}>
-                <AlertCircle className="h-3.5 w-3.5 mr-1" />
+              <div className={`flex items-center text-xl px-6 py-2 rounded-full ${getTimeIndicatorColor()}`}>
+                <AlertCircle className="h-8 w-8 mr-3" />
                 <span>{formatRemainingTime(remainingTime)}</span>
               </div>
             )}
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4">
           {isVerifiable ? (
             <button
               onClick={onVerify}
-              className={`p-2 rounded-full ${
+              className={`p-5 rounded-full ${
                 isCompleted
                   ? 'bg-green-100 text-green-600 cursor-default'
                   : 'bg-primary/10 text-primary hover:bg-primary/20'
               }`}
               disabled={isCompleted}
             >
-              <CheckCircle className="h-5 w-5" />
+              <CheckCircle className="h-12 w-12" />
             </button>
           ) : (
             <>
               {onEdit && (
                 <button
                   onClick={() => onEdit(point)}
-                  className="p-2 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100"
+                  className="p-5 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100"
                 >
-                  <Edit className="h-5 w-5" />
+                  <Edit className="h-12 w-12" />
                 </button>
               )}
               {onDelete && (
                 <button
                   onClick={() => onDelete(point.id)}
-                  className="p-2 rounded-full bg-red-50 text-red-500 hover:bg-red-100"
+                  className="p-5 rounded-full bg-red-50 text-red-500 hover:bg-red-100"
                 >
-                  <Trash className="h-5 w-5" />
+                  <Trash className="h-12 w-12" />
                 </button>
               )}
             </>

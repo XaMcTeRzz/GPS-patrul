@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Check, AlertTriangle, Timer, Clock, Zap } from 'lucide-react';
+import { MapPin, Check, AlertTriangle, Timer, Clock, Zap, MapPinned } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
 import PatrolPointItem from '@/components/PatrolPointItem';
@@ -114,41 +114,41 @@ const Patrol = () => {
 
   return (
     <div className="patrol-container pb-20">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Активний обхід</h1>
-        <div className="flex justify-between items-center mt-2">
+      <div className="mb-10">
+        <h1 className="text-5xl font-bold">Активний обхід</h1>
+        <div className="flex justify-between items-center mt-4">
           <div className="flex items-center text-muted-foreground">
-            <Timer className="h-4 w-4 mr-1.5" />
-            <span>{formatTime(elapsedTime)}</span>
+            <Timer className="h-10 w-10 mr-3" />
+            <span className="text-2xl">{formatTime(elapsedTime)}</span>
           </div>
           <div className="flex items-center">
-            <span className="text-sm text-muted-foreground mr-1">
+            <span className="text-xl text-muted-foreground mr-3">
               {activePatrol.completedPoints.length}/{activePatrol.patrolPoints.length} перевірено
             </span>
             <button 
               onClick={toggleTestMode}
-              className={`ml-2 p-1.5 rounded-full ${testMode ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}
+              className={`ml-4 p-3 rounded-full ${testMode ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}
               title={testMode ? 'Вимкнути тестовий режим' : 'Увімкнути тестовий режим'}
             >
-              <Zap className="h-4 w-4" />
+              <Zap className="h-10 w-10" />
             </button>
           </div>
         </div>
         {testMode && (
-          <div className="mt-2 p-2 bg-amber-50 text-amber-700 text-sm rounded-md border border-amber-200">
+          <div className="mt-4 p-6 bg-amber-50 text-amber-700 text-xl rounded-md border border-amber-200">
             Тестовий режим активний: час очікування скорочено в 10 разів для швидкого тестування
           </div>
         )}
       </div>
 
-      <div className="mb-4">
-        <div className="flex justify-between items-center bg-secondary p-3 rounded-lg mb-3">
+      <div className="mb-8">
+        <div className="flex justify-between items-center bg-secondary p-6 rounded-lg mb-6">
           <div className="flex items-center">
-            <MapPin className="h-5 w-5 mr-2 text-primary" />
-            <span className="font-medium">Точки</span>
+            <MapPinned className="h-16 w-16 mr-4 text-primary" />
+            <span className="font-medium text-3xl">Точки</span>
           </div>
           <div>
-            <span className="text-sm bg-primary/20 text-primary px-2 py-1 rounded-full">
+            <span className="text-2xl bg-primary/20 text-primary px-6 py-3 rounded-full">
               {remainingPoints.length} залишилось
             </span>
           </div>
@@ -165,10 +165,10 @@ const Patrol = () => {
         ))}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-10">
         <button
           onClick={handleEndPatrol}
-          className="btn-outline text-destructive border-destructive w-full"
+          className="btn-outline text-destructive border-destructive w-full text-2xl py-6"
         >
           Завершити обхід
         </button>
