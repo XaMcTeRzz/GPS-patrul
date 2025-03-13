@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Check, AlertTriangle, Timer, Clock } from 'lucide-react';
+import { MapPin, Check, AlertTriangle, Timer, Clock, Zap } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
 import PatrolPointItem from '@/components/PatrolPointItem';
@@ -14,7 +13,9 @@ const Patrol = () => {
     activePatrol, 
     completePatrolPoint, 
     endPatrol,
-    settings
+    settings,
+    toggleTestMode = () => {},
+    testMode = false
   } = usePatrol();
   
   const [remainingPoints, setRemainingPoints] = useState<string[]>([]);
@@ -124,8 +125,20 @@ const Patrol = () => {
             <span className="text-sm text-muted-foreground mr-1">
               {activePatrol.completedPoints.length}/{activePatrol.patrolPoints.length} перевірено
             </span>
+            <button 
+              onClick={toggleTestMode}
+              className={`ml-2 p-1.5 rounded-full ${testMode ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}
+              title={testMode ? 'Вимкнути тестовий режим' : 'Увімкнути тестовий режим'}
+            >
+              <Zap className="h-4 w-4" />
+            </button>
           </div>
         </div>
+        {testMode && (
+          <div className="mt-2 p-2 bg-amber-50 text-amber-700 text-sm rounded-md border border-amber-200">
+            Тестовий режим активний: час очікування скорочено в 10 разів для швидкого тестування
+          </div>
+        )}
       </div>
 
       <div className="mb-4">
@@ -167,3 +180,4 @@ const Patrol = () => {
 };
 
 export default Patrol;
+

@@ -1,13 +1,60 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, List, Clock, Settings, Play, Timer } from 'lucide-react';
+import { MapPin, List, Clock, Settings, Play, Timer, Calendar } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import { toast } from 'sonner';
+import { useScheduledPatrol } from '@/hooks/useScheduledPatrol';
 
 const Index = () => {
   const navigate = useNavigate();
   const { patrolPoints, activePatrol, startPatrol, settings } = usePatrol();
+  const { formatScheduleTime } = useScheduledPatrol();
+
+  // Находим ближайшее активное расписание
+  const nextSchedule = useMemo(() => {
+    if (!settings.scheduleEnabled) return null;
+    
+    const enabledSchedules = settings.scheduledPatrols.filter(s => s.enabled);
+    if (enabledSchedules.length === 0) return null;
+    
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    // Сначала ищем расписания на сегодня, которые еще не прошли
+    let todaySchedules = enabledSchedules.filter(s => 
+      s.hour > currentHour || (s.hour === currentHour && s.minute > currentMinute)
+    );
+    
+    // Сортируем по времени
+    todaySchedules.sort((a, b) => {
+      if (a.hour !== b.hour) return a.hour - b.hour;
+      return a.minute - b.minute;
+    });
+    
+    // Если есть расписания на сегодня, возвращаем ближайшее
+    if (todaySchedules.length > 0) {
+      return {
+        schedule: todaySchedules[0],
+        isToday: true
+      };
+    }
+    
+    // Если нет расписаний на сегодня, возвращаем первое на завтра
+    const tomorrowSchedules = [...enabledSchedules].sort((a, b) => {
+      if (a.hour !== b.hour) return a.hour - b.hour;
+      return a.minute - b.minute;
+    });
+    
+    if (tomorrowSchedules.length > 0) {
+      return {
+        schedule: tomorrowSchedules[0],
+        isToday: false
+      };
+    }
+    
+    return null;
+  }, [settings.scheduleEnabled, settings.scheduledPatrols]);
 
   const handleStartPatrol = () => {
     if (patrolPoints.length === 0) {
@@ -47,6 +94,16 @@ const Index = () => {
             <span className="text-sm mt-2 opacity-80">Спочатку додайте точки</span>
           )}
         </button>
+
+        {settings.scheduleEnabled && nextSchedule && (
+          <div className="flex items-center justify-center p-4 bg-blue-50 text-blue-800 rounded-lg border border-blue-200">
+            <Calendar className="h-5 w-5 mr-2" />
+            <span>
+              Наступний автоматичний обхід: {formatScheduleTime(nextSchedule.schedule)} 
+              {nextSchedule.isToday ? ' (сьогодні)' : ' (завтра)'}
+            </span>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <button

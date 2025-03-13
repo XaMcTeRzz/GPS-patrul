@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,7 @@ import Patrol from "./pages/Patrol";
 import Log from "./pages/Log";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import ScheduleMonitor from "./components/ScheduleMonitor";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +20,7 @@ const App = () => (
       <PatrolProvider>
         <Toaster />
         <Sonner />
+        <ScheduleMonitor />
         <BrowserRouter>
           <RouterRoutes>
             <Route path="/" element={<Index />} />

@@ -36,6 +36,12 @@ export type SmtpSettings = {
   from: string;
 };
 
+export type ScheduleTime = {
+  hour: number;
+  minute: number;
+  enabled: boolean;
+};
+
 export type Settings = {
   verificationMethod: 'gps' | 'qrcode' | 'manual';
   notificationsEnabled: boolean;
@@ -45,6 +51,8 @@ export type Settings = {
   telegramBotToken?: string;
   telegramChatId?: string;
   smtpSettings?: SmtpSettings;
+  scheduledPatrols: ScheduleTime[]; // Расписание автоматических патрулей
+  scheduleEnabled: boolean; // Включено ли расписание
 };
 
 export type PatrolContextType = {
@@ -60,6 +68,8 @@ export type PatrolContextType = {
   settings: Settings;
   updateSettings: (newSettings: Partial<Settings>) => void;
   loading: boolean;
+  toggleTestMode: () => void; // Обязательное свойство для включения/выключения тестового режима
+  testMode: boolean; // Обязательное свойство, указывающее, активен ли тестовый режим
 };
 
 export const defaultSettings: Settings = {
@@ -67,4 +77,9 @@ export const defaultSettings: Settings = {
   notificationsEnabled: true,
   proximityThreshold: 50,
   patrolTimeMinutes: 5,
+  scheduledPatrols: [
+    { hour: 16, minute: 0, enabled: false },
+    { hour: 20, minute: 0, enabled: false }
+  ],
+  scheduleEnabled: false
 };

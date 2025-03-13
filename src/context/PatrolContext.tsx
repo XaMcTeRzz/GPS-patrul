@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect } from 'react';
 import { PatrolContextType } from '@/types/patrol-types';
 import { usePatrolPoints } from '@/hooks/usePatrolPoints';
@@ -27,7 +26,9 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setActivePatrol, 
     startPatrol, 
     completePatrolPoint, 
-    endPatrol 
+    endPatrol,
+    toggleTestMode,
+    testMode
   } = usePatrolSession({ 
     patrolPoints, 
     addLogEntry,
@@ -64,6 +65,8 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     settings,
     updateSettings,
     loading,
+    toggleTestMode,
+    testMode
   };
 
   return <PatrolContext.Provider value={value}>{children}</PatrolContext.Provider>;

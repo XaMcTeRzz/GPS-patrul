@@ -1,15 +1,18 @@
-
 import React, { useState } from 'react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
-import { Check, AlertTriangle, Info, Mail } from 'lucide-react';
+import { Check, AlertTriangle, Info, Mail, Clock, Plus, Trash, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
-import { SmtpSettings } from '@/types/patrol-types';
+import { ScheduleTime, SmtpSettings } from '@/types/patrol-types';
+import { useScheduledPatrol } from '@/hooks/useScheduledPatrol';
 
 const Settings = () => {
   const { settings, updateSettings } = usePatrol();
+  const { formatScheduleTime } = useScheduledPatrol();
   const [testEmailAddress, setTestEmailAddress] = useState('');
   const [showEmailPassword, setShowEmailPassword] = useState(false);
+  const [newScheduleHour, setNewScheduleHour] = useState(8);
+  const [newScheduleMinute, setNewScheduleMinute] = useState(0);
 
   const handleVerificationMethodChange = (method: 'gps' | 'qrcode' | 'manual') => {
     updateSettings({ verificationMethod: method });
@@ -43,6 +46,92 @@ const Settings = () => {
 
   const handleTelegramChatIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updateSettings({ telegramChatId: e.target.value });
+  };
+
+  // Обработчики для расписания
+  const handleScheduleEnabledToggle = () => {
+    updateSettings({ scheduleEnabled: !settings.scheduleEnabled });
+    
+    if (!settings.scheduleEnabled) {
+      toast.info('Автоматический запуск патрулирования по расписанию включен');
+    } else {
+      toast.info('Автоматический запуск патрулирования по расписанию отключен');
+    }
+  };
+  
+  const handleScheduleItemToggle = (index: number) => {
+    const updatedSchedules = [...settings.scheduledPatrols];
+    updatedSchedules[index] = {
+      ...updatedSchedules[index],
+      enabled: !updatedSchedules[index].enabled
+    };
+    
+    updateSettings({ scheduledPatrols: updatedSchedules });
+    
+    const time = formatScheduleTime(updatedSchedules[index]);
+    if (updatedSchedules[index].enabled) {
+      toast.info(`Патрулирование в ${time} включено`);
+    } else {
+      toast.info(`Патрулирование в ${time} отключено`);
+    }
+  };
+  
+  const handleAddSchedule = () => {
+    if (settings.scheduledPatrols.length >= 5) {
+      toast.error('Максимальное количество расписаний - 5');
+      return;
+    }
+    
+    const newSchedule: ScheduleTime = {
+      hour: newScheduleHour,
+      minute: newScheduleMinute,
+      enabled: true
+    };
+    
+    // Проверяем, нет ли уже такого расписания
+    const exists = settings.scheduledPatrols.some(
+      s => s.hour === newSchedule.hour && s.minute === newSchedule.minute
+    );
+    
+    if (exists) {
+      toast.error('Такое расписание уже существует');
+      return;
+    }
+    
+    const updatedSchedules = [...settings.scheduledPatrols, newSchedule];
+    updateSettings({ scheduledPatrols: updatedSchedules });
+    toast.success(`Добавлено расписание: ${formatScheduleTime(newSchedule)}`);
+  };
+  
+  const handleRemoveSchedule = (index: number) => {
+    const scheduleToRemove = settings.scheduledPatrols[index];
+    const updatedSchedules = settings.scheduledPatrols.filter((_, i) => i !== index);
+    updateSettings({ scheduledPatrols: updatedSchedules });
+    toast.info(`Удалено расписание: ${formatScheduleTime(scheduleToRemove)}`);
+  };
+  
+  const handleScheduleHourChange = (index: number, hour: number) => {
+    if (hour < 0 || hour > 23) return;
+    
+    const updatedSchedules = [...settings.scheduledPatrols];
+    updatedSchedules[index] = {
+      ...updatedSchedules[index],
+      hour
+    };
+    
+    updateSettings({ scheduledPatrols: updatedSchedules });
+  };
+  
+  const handleScheduleMinuteChange = (index: number, minute: number) => {
+    if (minute < 0 || minute > 59) return;
+    
+    const updatedSchedules = [...settings.scheduledPatrols];
+    updatedSchedules[index] = {
+      ...updatedSchedules[index],
+      minute
+    };
+    
+    updateSettings({ scheduledPatrols: updatedSchedules });
   };
 
   // SMTP handlers
@@ -167,6 +256,130 @@ const Settings = () => {
       <h1 className="text-2xl font-bold mb-6">Налаштування</h1>
 
       <div className="space-y-6">
+        <div className="bg-card border rounded-lg p-4">
+          <h2 className="text-lg font-medium mb-4 flex items-center">
+            <Calendar className="h-5 w-5 mr-2" />
+            Автоматичний запуск
+            <div className="ml-auto">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={settings.scheduleEnabled} 
+                  onChange={handleScheduleEnabledToggle}
+                  className="sr-only peer" 
+                />
+                <div className={`w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${settings.scheduleEnabled ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                <span className="ml-3 text-sm font-medium">{settings.scheduleEnabled ? 'Увімкнено' : 'Вимкнено'}</span>
+              </label>
+            </div>
+          </h2>
+          
+          {!settings.scheduleEnabled && (
+            <div className="bg-blue-50 text-blue-800 p-3 rounded-md mb-4 flex items-start">
+              <Info className="h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
+              <p className="text-sm">Увімкніть автоматичний запуск, щоб патрулювання починалося за розкладом.</p>
+            </div>
+          )}
+          
+          <div className="space-y-4">
+            {settings.scheduledPatrols.length > 0 ? (
+              <div className="space-y-3">
+                {settings.scheduledPatrols.map((schedule, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                    <div className="flex items-center">
+                      <Clock className="h-5 w-5 mr-2 text-primary" />
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="number"
+                          min="0"
+                          max="23"
+                          value={schedule.hour}
+                          onChange={(e) => handleScheduleHourChange(index, parseInt(e.target.value))}
+                          className="input w-16 text-center"
+                          disabled={!settings.scheduleEnabled}
+                        />
+                        <span>:</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={schedule.minute}
+                          onChange={(e) => handleScheduleMinuteChange(index, parseInt(e.target.value))}
+                          className="input w-16 text-center"
+                          disabled={!settings.scheduleEnabled}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={schedule.enabled} 
+                          onChange={() => handleScheduleItemToggle(index)}
+                          className="sr-only peer" 
+                          disabled={!settings.scheduleEnabled}
+                        />
+                        <div className={`w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${schedule.enabled && settings.scheduleEnabled ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                      </label>
+                      
+                      <button
+                        onClick={() => handleRemoveSchedule(index)}
+                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-full"
+                        disabled={!settings.scheduleEnabled}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-4 border rounded-lg bg-gray-50">
+                <p className="text-muted-foreground">Немає розкладу</p>
+              </div>
+            )}
+            
+            {settings.scheduleEnabled && (
+              <div className="flex items-center space-x-2 mt-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value={newScheduleHour}
+                    onChange={(e) => setNewScheduleHour(parseInt(e.target.value))}
+                    className="input w-16 text-center"
+                    placeholder="Год"
+                  />
+                  <span>:</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={newScheduleMinute}
+                    onChange={(e) => setNewScheduleMinute(parseInt(e.target.value))}
+                    className="input w-16 text-center"
+                    placeholder="Мин"
+                  />
+                </div>
+                
+                <button
+                  onClick={handleAddSchedule}
+                  className="flex items-center space-x-1 bg-primary text-primary-foreground px-3 py-2 rounded-md"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Додати</span>
+                </button>
+              </div>
+            )}
+            
+            <p className="text-xs text-muted-foreground mt-2">
+              Патрулювання буде автоматично запускатися у вказаний час, якщо увімкнено розклад.
+            </p>
+          </div>
+        </div>
+
         <div className="bg-card border rounded-lg p-4">
           <h2 className="text-lg font-medium mb-4">Перевірка точок</h2>
           
