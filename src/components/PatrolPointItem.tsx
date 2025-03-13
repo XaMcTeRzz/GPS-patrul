@@ -80,61 +80,61 @@ const PatrolPointItem: React.FC<PatrolPointItemProps> = ({
   };
 
   return (
-    <div className={`bg-card border rounded-lg p-8 mb-6 ${isCompleted ? 'border-green-500 bg-green-50' : ''}`}>
+    <div className={`bg-card border rounded-lg p-6 mb-4 ${isCompleted ? 'border-green-500 bg-green-50' : ''}`}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h3 className="font-medium text-4xl">{point.name}</h3>
-          <p className="text-xl text-muted-foreground mt-3">{point.description}</p>
+          <h3 className="font-medium text-2xl">{point.name}</h3>
+          <p className="text-base text-muted-foreground mt-2">{point.description}</p>
           
-          <div className="flex flex-wrap gap-6 mt-4">
-            <div className="flex items-center text-xl text-muted-foreground">
-              <MapPinned className="h-16 w-16 mr-3" />
+          <div className="flex flex-wrap gap-4 mt-3">
+            <div className="flex items-center text-base text-muted-foreground">
+              <MapPinned className="h-10 w-10 mr-2" />
               <span>Радіус: {point.radiusMeters}м</span>
             </div>
             
-            <div className="flex items-center text-xl text-muted-foreground">
-              <Clock className="h-10 w-10 mr-3" />
+            <div className="flex items-center text-base text-muted-foreground">
+              <Clock className="h-7 w-7 mr-2" />
               <span>Час: {point.timeMinutes} хв</span>
             </div>
             
             {isVerifiable && !isCompleted && remainingTime !== null && (
-              <div className={`flex items-center text-xl px-6 py-2 rounded-full ${getTimeIndicatorColor()}`}>
-                <AlertCircle className="h-8 w-8 mr-3" />
+              <div className={`flex items-center text-base px-4 py-2 rounded-full ${getTimeIndicatorColor()}`}>
+                <AlertCircle className="h-6 w-6 mr-2" />
                 <span>{formatRemainingTime(remainingTime)}</span>
               </div>
             )}
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {isVerifiable ? (
             <button
               onClick={onVerify}
-              className={`p-5 rounded-full ${
+              className={`p-3 rounded-full ${
                 isCompleted
                   ? 'bg-green-100 text-green-600 cursor-default'
                   : 'bg-primary/10 text-primary hover:bg-primary/20'
               }`}
               disabled={isCompleted}
             >
-              <CheckCircle className="h-12 w-12" />
+              <CheckCircle className="h-8 w-8" />
             </button>
           ) : (
             <>
               {onEdit && (
                 <button
                   onClick={() => onEdit(point)}
-                  className="p-5 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100"
+                  className="p-3 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100"
                 >
-                  <Edit className="h-12 w-12" />
+                  <Edit className="h-8 w-8" />
                 </button>
               )}
               {onDelete && (
                 <button
                   onClick={() => onDelete(point.id)}
-                  className="p-5 rounded-full bg-red-50 text-red-500 hover:bg-red-100"
+                  className="p-3 rounded-full bg-red-50 text-red-500 hover:bg-red-100"
                 >
-                  <Trash className="h-12 w-12" />
+                  <Trash className="h-8 w-8" />
                 </button>
               )}
             </>

@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import PatrolPointItem from '@/components/PatrolPointItem';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { toast } from 'sonner';
+import { playButtonSound, playCheckpointSound } from '@/utils/sound';
 
 const Patrol = () => {
   const navigate = useNavigate();
@@ -88,6 +89,7 @@ const Patrol = () => {
     }
     
     if (isWithinRadius(point.latitude, point.longitude, point.radiusMeters)) {
+      playCheckpointSound();
       completePatrolPoint(pointId);
       setRemainingPoints(prev => prev.filter(id => id !== pointId));
       
@@ -105,6 +107,7 @@ const Patrol = () => {
 
   const handleEndPatrol = () => {
     if (window.confirm('Ви впевнені, що хочете завершити обхід? Неперевірені точки будуть позначені як пропущені.')) {
+      playButtonSound();
       endPatrol();
       navigate('/');
     }
@@ -114,41 +117,41 @@ const Patrol = () => {
 
   return (
     <div className="patrol-container pb-20">
-      <div className="mb-10">
-        <h1 className="text-5xl font-bold">Активний обхід</h1>
-        <div className="flex justify-between items-center mt-4">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Активний обхід</h1>
+        <div className="flex justify-between items-center mt-3">
           <div className="flex items-center text-muted-foreground">
-            <Timer className="h-10 w-10 mr-3" />
-            <span className="text-2xl">{formatTime(elapsedTime)}</span>
+            <Timer className="h-7 w-7 mr-2" />
+            <span className="text-lg">{formatTime(elapsedTime)}</span>
           </div>
           <div className="flex items-center">
-            <span className="text-xl text-muted-foreground mr-3">
+            <span className="text-base text-muted-foreground mr-2">
               {activePatrol.completedPoints.length}/{activePatrol.patrolPoints.length} перевірено
             </span>
             <button 
               onClick={toggleTestMode}
-              className={`ml-4 p-3 rounded-full ${testMode ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}
+              className={`ml-3 p-2 rounded-full ${testMode ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'}`}
               title={testMode ? 'Вимкнути тестовий режим' : 'Увімкнути тестовий режим'}
             >
-              <Zap className="h-10 w-10" />
+              <Zap className="h-7 w-7" />
             </button>
           </div>
         </div>
         {testMode && (
-          <div className="mt-4 p-6 bg-amber-50 text-amber-700 text-xl rounded-md border border-amber-200">
+          <div className="mt-3 p-4 bg-amber-50 text-amber-700 text-base rounded-md border border-amber-200">
             Тестовий режим активний: час очікування скорочено в 10 разів для швидкого тестування
           </div>
         )}
       </div>
 
-      <div className="mb-8">
-        <div className="flex justify-between items-center bg-secondary p-6 rounded-lg mb-6">
+      <div className="mb-6">
+        <div className="flex justify-between items-center bg-secondary p-5 rounded-lg mb-4">
           <div className="flex items-center">
-            <MapPinned className="h-16 w-16 mr-4 text-primary" />
-            <span className="font-medium text-3xl">Точки</span>
+            <MapPinned className="h-10 w-10 mr-3 text-primary" />
+            <span className="font-medium text-xl">Точки</span>
           </div>
           <div>
-            <span className="text-2xl bg-primary/20 text-primary px-6 py-3 rounded-full">
+            <span className="text-lg bg-primary/20 text-primary px-4 py-2 rounded-full">
               {remainingPoints.length} залишилось
             </span>
           </div>
@@ -165,10 +168,10 @@ const Patrol = () => {
         ))}
       </div>
 
-      <div className="mt-10">
+      <div className="mt-8">
         <button
           onClick={handleEndPatrol}
-          className="btn-outline text-destructive border-destructive w-full text-2xl py-6"
+          className="btn-outline text-destructive border-destructive w-full text-lg py-4"
         >
           Завершити обхід
         </button>

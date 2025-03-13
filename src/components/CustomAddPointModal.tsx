@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { PatrolPoint } from '@/types/patrol-types';
 import { MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 
 type CustomAddPointModalProps = {
   isOpen: boolean;
@@ -24,7 +24,7 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
   const [timeMinutes, setTimeMinutes] = useState<number>(5);
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
 
-  const { position } = useGeolocation({
+  const { position, getCurrentPosition } = useGeolocation({
     enableHighAccuracy: true,
     maximumAge: 10000,
     timeout: 15000
@@ -43,6 +43,15 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
     }
   }, [isOpen]);
 
+  // Следим за изменениями position
+  useEffect(() => {
+    if (position && isUsingCurrentLocation) {
+      setLatitude(position.latitude);
+      setLongitude(position.longitude);
+      toast.success('Поточне місцезнаходження встановлено');
+    }
+  }, [position, isUsingCurrentLocation]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onAdd({
@@ -57,11 +66,8 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
   };
 
   const useCurrentLocation = () => {
-    if (position) {
-      setLatitude(position.latitude);
-      setLongitude(position.longitude);
-      setIsUsingCurrentLocation(true);
-    }
+    setIsUsingCurrentLocation(true);
+    getCurrentPosition();
   };
 
   return (
