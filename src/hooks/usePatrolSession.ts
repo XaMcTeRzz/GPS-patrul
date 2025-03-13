@@ -1,18 +1,13 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { PatrolSession, PatrolPoint, LogEntry } from '@/types/patrol-types';
+import { PatrolSession, PatrolPoint, LogEntry, Settings } from '@/types/patrol-types';
 import { sendMissedPointNotification } from '@/utils/notificationService';
 
 type UsePatrolSessionProps = {
   patrolPoints: PatrolPoint[];
   addLogEntry: (entry: Omit<LogEntry, 'id'>) => void;
-  settings: {
-    patrolTimeMinutes: number;
-    telegramBotToken?: string;
-    telegramChatId?: string;
-    notificationEmail?: string;
-  };
+  settings: Settings;
 };
 
 export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePatrolSessionProps) => {
@@ -88,6 +83,16 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
             timestamp: new Date().toISOString(),
             status: 'missed',
           });
+          
+          // Send notifications for missed points if enabled
+          if (settings.notificationsEnabled) {
+            sendMissedPointNotification(
+              settings.telegramBotToken,
+              settings.telegramChatId,
+              settings.notificationEmail,
+              point.name
+            );
+          }
         });
       }
       
@@ -107,23 +112,33 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
 
   // Monitor for missed points and send notifications
   useEffect(() => {
-    if (!activePatrol || activePatrol.status !== 'active') return;
+    if (!activePatrol || activePatrol.status !== 'active' || !settings.notificationsEnabled) return;
     
-    const patrolStartTime = new Date(activePatrol.startTime).getTime();
     const timeoutMinutes = settings.patrolTimeMinutes;
+    console.log('Моніторинг пропущених точок налаштований', { 
+      timeoutMinutes,
+      notificationsEnabled: settings.notificationsEnabled,
+      hasTelegramConfig: Boolean(settings.telegramBotToken && settings.telegramChatId),
+      hasEmail: Boolean(settings.notificationEmail)
+    });
     
     // Create a timeout for each patrol point
     const timeouts = activePatrol.patrolPoints
       .filter(point => !activePatrol.completedPoints.includes(point.id))
       .map(point => {
         return setTimeout(async () => {
+          console.log(`Перевірка точки "${point.name}" через ${timeoutMinutes} хвилин...`);
+          
           // Check if the point has been completed since the timeout was set
           const currentPatrol = JSON.parse(localStorage.getItem('activePatrol') || 'null');
           if (!currentPatrol || 
               currentPatrol.status !== 'active' || 
               currentPatrol.completedPoints.includes(point.id)) {
+            console.log(`Точка "${point.name}" вже перевірена або патруль завершено`);
             return;
           }
+          
+          console.log(`Точка "${point.name}" не перевірена вчасно! Відправка сповіщення...`);
           
           // Send notification for missed point
           await sendMissedPointNotification(
@@ -149,10 +164,10 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
     
     // Clean up timeouts when component unmounts or patrol status changes
     return () => {
+      console.log('Очищення таймерів моніторингу точок');
       timeouts.forEach(clearTimeout);
     };
-  }, [activePatrol, settings.patrolTimeMinutes, settings.telegramBotToken, 
-      settings.telegramChatId, settings.notificationEmail, addLogEntry]);
+  }, [activePatrol, settings, addLogEntry]);
 
   return {
     activePatrol,

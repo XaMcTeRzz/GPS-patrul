@@ -8,6 +8,13 @@ export const sendTelegramNotification = async (
   message: string
 ): Promise<boolean> => {
   try {
+    console.log('Спроба відправки повідомлення в Telegram', { botToken, chatId, message });
+    
+    if (!botToken || !chatId) {
+      console.error('Відсутній токен бота або ID чату');
+      return false;
+    }
+    
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: {
@@ -21,6 +28,8 @@ export const sendTelegramNotification = async (
     });
 
     const data = await response.json();
+    console.log('Відповідь від Telegram API:', data);
+    
     if (!data.ok) {
       console.error('Помилка відправки в Telegram:', data.description);
       return false;
@@ -39,8 +48,11 @@ export const sendEmailNotification = async (
   message: string
 ): Promise<boolean> => {
   try {
-    // For demonstration, we're using a mock service
-    // In production, you'd use a real email service API
+    if (!email) {
+      console.error('Відсутня email адреса');
+      return false;
+    }
+    
     console.log(`Відправка email на ${email}`, { subject, message });
     
     // Simulate API call delay
@@ -62,11 +74,20 @@ export const sendMissedPointNotification = async (
 ): Promise<void> => {
   const message = `⚠️ Увага: Не пройдена точка "${pointName}" на патрульному маршруті!`;
   
+  console.log('Відправка сповіщення про пропущену точку', {
+    hasTelegramConfig: Boolean(telegramBotToken && telegramChatId),
+    hasEmail: Boolean(email),
+    pointName
+  });
+  
   let telegramSent = false;
   let emailSent = false;
   
   if (telegramBotToken && telegramChatId) {
     telegramSent = await sendTelegramNotification(telegramBotToken, telegramChatId, message);
+    console.log('Результат відправки в Telegram:', telegramSent);
+  } else {
+    console.log('Не налаштовані параметри Telegram');
   }
   
   if (email) {
@@ -75,11 +96,16 @@ export const sendMissedPointNotification = async (
       'Пропущена точка патрульного маршруту',
       message
     );
+    console.log('Результат відправки Email:', emailSent);
+  } else {
+    console.log('Не налаштована email адреса');
   }
   
   if (telegramSent || emailSent) {
     toast.success('Сповіщення про пропущену точку відправлено');
   } else if (telegramBotToken || email) {
     toast.error('Не вдалось відправити сповіщення');
+  } else {
+    toast.warning('Налаштуйте Telegram або Email для отримання сповіщень');
   }
 };
