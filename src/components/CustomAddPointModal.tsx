@@ -58,8 +58,8 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
 
   const useCurrentLocation = () => {
     if (position) {
-      setLatitude(position.coords.latitude);
-      setLongitude(position.coords.longitude);
+      setLatitude(position.latitude);
+      setLongitude(position.longitude);
       setIsUsingCurrentLocation(true);
     }
   };
