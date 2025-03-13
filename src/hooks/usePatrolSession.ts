@@ -103,9 +103,9 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
         });
       }
       
-      const updated = {
+      const updated: PatrolSession = {
         ...prev,
-        status: 'completed',
+        status: 'completed' as const,
         endTime: new Date().toISOString(),
       };
       
