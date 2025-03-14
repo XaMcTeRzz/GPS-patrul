@@ -127,17 +127,6 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
             timestamp: new Date().toISOString(),
             status: 'missed',
           });
-          
-          // Send notifications for missed points if enabled
-          if (settings.notificationsEnabled) {
-            sendMissedPointNotification(
-              settings.telegramBotToken,
-              settings.telegramChatId,
-              settings.notificationEmail,
-              point.name,
-              settings.smtpSettings
-            );
-          }
         });
       }
       
@@ -154,7 +143,7 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
     });
 
     // Создаем отчет
-    const report = formatReport(activePatrol.patrolPoints);
+    const report = formatReport(activePatrol.patrolPoints, activePatrol.startTime);
 
     // Отправляем отчет
     await sendNotification({
