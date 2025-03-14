@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
 import LogItem from '@/components/LogItem';
+import { ScrollText, Calendar, AlertTriangle } from 'lucide-react';
 
 const Log = () => {
   const { logEntries } = usePatrol();
@@ -24,31 +24,52 @@ const Log = () => {
 
   return (
     <div className="patrol-container pb-20">
-      <h1 className="text-2xl font-bold mb-6">Журнал обходів</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold flex items-center">
+          <ScrollText className="h-6 w-6 mr-2 text-primary" />
+          Журнал обходів
+        </h1>
+        <span className="text-sm text-muted-foreground">
+          Всього: {patrolIds.length}
+        </span>
+      </div>
 
-      {logEntries.length === 0 ? (
+      {patrolIds.length === 0 ? (
         <div className="bg-card border rounded-lg p-8 text-center">
+          <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-amber-500" />
           <h3 className="text-lg font-medium mb-2">Ще немає записів обходу</h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-muted-foreground">
             Завершіть обхід, щоб побачити записи тут
           </p>
         </div>
       ) : (
-        <div>
+        <div className="space-y-6">
           {patrolIds.map((patrolId) => (
-            <div key={patrolId} className="mb-6">
-              <div className="flex items-center mb-3">
-                <span className="text-sm font-medium bg-secondary px-3 py-1.5 rounded-full">
-                  Обхід #{patrolId.slice(-4)}
-                </span>
-                <span className="text-xs text-muted-foreground ml-2">
-                  {new Date(groupedEntries[patrolId][0].timestamp).toLocaleDateString('uk')}
-                </span>
+            <div key={patrolId} className="bg-card border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4 border-b pb-3">
+                <div className="flex items-center space-x-3">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div>
+                    <h3 className="font-medium">Обхід #{patrolId.slice(-4)}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(groupedEntries[patrolId][0].timestamp).toLocaleDateString('uk', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Точок: {groupedEntries[patrolId].length}
+                </div>
               </div>
 
-              {groupedEntries[patrolId].map((entry) => (
-                <LogItem key={entry.id} entry={entry} />
-              ))}
+              <div className="space-y-3">
+                {groupedEntries[patrolId].map((entry) => (
+                  <LogItem key={entry.id} entry={entry} />
+                ))}
+              </div>
             </div>
           ))}
         </div>
