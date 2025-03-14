@@ -164,7 +164,7 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
     if (!activePatrol || activePatrol.status !== 'active') return;
     
     const now = Date.now();
-    let hasExpiredPoints = false;
+    const expiredPoints: PatrolPoint[] = [];
     
     // Проверяем каждую точку патруля
     for (const point of activePatrol.patrolPoints) {
@@ -179,29 +179,8 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       const isExpired = now >= startTime + timeoutMs;
 
       if (isExpired) {
-        hasExpiredPoints = true;
-        console.log(`Точка "${point.name}" не перевірена вчасно! Відправка сповіщення...`);
-
-        // Отправляем уведомление
-        if (settings.notificationsEnabled) {
-          await sendMissedPointNotification(point, {
-            telegramBotToken: settings.telegramBotToken,
-            telegramChatId: settings.telegramChatId,
-            ...settings.smtpSettings
-          });
-        }
-
-        // Добавляем запись в журнал
-        addLogEntry({
-          patrolId: activePatrol.id,
-          pointId: point.id,
-          pointName: point.name,
-          timestamp: new Date().toISOString(),
-          status: 'delayed',
-          notes: `Не пройдена точка протягом ${point.timeMinutes || settings.patrolTimeMinutes} хвилин`
-        });
-
-        toast.error(`Точка "${point.name}" не перевірена вчасно!`);
+        expiredPoints.push(point);
+        console.log(`Точка "${point.name}" не перевірена вчасно!`);
       }
     }
 
@@ -219,7 +198,32 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
     // Если все точки обработаны, завершаем патруль
     if (allPointsProcessed) {
       console.log('Всі точки оброблені (завершені або просрочені). Автоматичне завершення патруля...');
-      toast.info('Обхід автоматично завершено - час для всіх точок вийшов');
+      
+      // Создаем записи в журнале для всех пропущенных точек
+      for (const point of expiredPoints) {
+        addLogEntry({
+          patrolId: activePatrol.id,
+          pointId: point.id,
+          pointName: point.name,
+          timestamp: new Date().toISOString(),
+          status: 'delayed',
+          notes: `Не пройдена точка протягом ${point.timeMinutes || settings.patrolTimeMinutes} хвилин`
+        });
+      }
+
+      // Отправляем одно уведомление со всеми пропущенными точками
+      if (settings.notificationsEnabled && expiredPoints.length > 0) {
+        const missedPointsList = expiredPoints
+          .map(point => `- ${point.name}`)
+          .join('\n');
+        
+        await sendNotification({
+          type: 'missed_points',
+          message: `❌ Пропущені точки обходу:\n${missedPointsList}`
+        });
+      }
+
+      toast.info(`Обхід автоматично завершено. Пропущено точок: ${expiredPoints.length}`);
       
       // Очищаем интервал мониторинга
       if (monitorIntervalRef.current !== null) {
@@ -230,7 +234,7 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       // Завершаем патруль
       await endPatrol();
     }
-  }, [activePatrol, settings, addLogEntry, patrolPoints, endPatrol, testMode]);
+  }, [activePatrol, settings, addLogEntry, endPatrol, testMode, sendNotification]);
   
   // Функция для настройки мониторинга точек
   const setupPointsMonitoring = useCallback(() => {
