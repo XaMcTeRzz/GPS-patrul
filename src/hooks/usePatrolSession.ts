@@ -214,12 +214,27 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       toast.error(`Точка "${task.pointName}" не перевірена вчасно!`);
     }
     
+    // Проверяем, все ли точки просрочены или завершены
+    const allPointsExpiredOrCompleted = activePatrol.patrolPoints.every(point => {
+      const isCompleted = activePatrol.completedPoints.includes(point.id);
+      const isExpired = expiredTasks.some(task => task.pointId === point.id) ||
+                       !monitorTasksRef.current.some(task => task.pointId === point.id);
+      return isCompleted || isExpired;
+    });
+
+    // Если все точки просрочены или завершены, автоматически завершаем патруль
+    if (allPointsExpiredOrCompleted) {
+      console.log('Всі точки просрочені або завершені. Автоматичне завершення патруля...');
+      toast.info('Обхід автоматично завершено - всі точки просрочені або завершені');
+      await endPatrol();
+    }
+    
     // Если задач больше нет, останавливаем интервал
     if (monitorTasksRef.current.length === 0 && monitorIntervalRef.current !== null) {
       clearInterval(monitorIntervalRef.current);
       monitorIntervalRef.current = null;
     }
-  }, [activePatrol, settings, addLogEntry, patrolPoints]);
+  }, [activePatrol, settings, addLogEntry, patrolPoints, endPatrol]);
   
   // Функция для настройки мониторинга точек
   const setupPointsMonitoring = useCallback(() => {
