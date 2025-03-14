@@ -165,12 +165,14 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
     
     const now = Date.now();
     const expiredTasks: PointMonitorTask[] = [];
+    const expiredPointIds = new Set<string>();
     
     // Находим просроченные задачи
     monitorTasksRef.current = monitorTasksRef.current.filter(task => {
       if (now >= task.expiryTime && 
           !activePatrol.completedPoints.includes(task.pointId)) {
         expiredTasks.push(task);
+        expiredPointIds.add(task.pointId);
         return false;
       }
       return true;
@@ -213,23 +215,41 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       
       toast.error(`Точка "${task.pointName}" не перевірена вчасно!`);
     }
+
+    // Проверяем состояние всех точек
+    const allPoints = activePatrol.patrolPoints;
+    const completedPoints = new Set(activePatrol.completedPoints);
     
-    // Проверяем, все ли точки просрочены или завершены
-    const allPointsExpiredOrCompleted = activePatrol.patrolPoints.every(point => {
-      const isCompleted = activePatrol.completedPoints.includes(point.id);
-      const isExpired = expiredTasks.some(task => task.pointId === point.id) ||
-                       !monitorTasksRef.current.some(task => task.pointId === point.id);
-      return isCompleted || isExpired;
+    // Точка считается обработанной, если она:
+    // 1. Завершена успешно (в completedPoints)
+    // 2. Просрочена (в expiredPointIds)
+    // 3. Не имеет активной задачи мониторинга
+    const allPointsProcessed = allPoints.every(point => {
+      const isCompleted = completedPoints.has(point.id);
+      const isExpired = expiredPointIds.has(point.id);
+      const hasActiveTask = monitorTasksRef.current.some(task => task.pointId === point.id);
+      
+      return isCompleted || isExpired || !hasActiveTask;
     });
 
-    // Если все точки просрочены или завершены, автоматически завершаем патруль
-    if (allPointsExpiredOrCompleted) {
-      console.log('Всі точки просрочені або завершені. Автоматичне завершення патруля...');
-      toast.info('Обхід автоматично завершено - всі точки просрочені або завершені');
+    // Если все точки обработаны, завершаем патруль
+    if (allPointsProcessed) {
+      console.log('Всі точки оброблені (завершені або просрочені). Автоматичне завершення патруля...');
+      toast.info('Обхід автоматично завершено - час для всіх точок вийшов');
+      
+      // Очищаем задачи мониторинга
+      monitorTasksRef.current = [];
+      if (monitorIntervalRef.current !== null) {
+        clearInterval(monitorIntervalRef.current);
+        monitorIntervalRef.current = null;
+      }
+      
+      // Завершаем патруль
       await endPatrol();
+      return; // Выходим после завершения патруля
     }
     
-    // Если задач больше нет, останавливаем интервал
+    // Если остались активные задачи, продолжаем мониторинг
     if (monitorTasksRef.current.length === 0 && monitorIntervalRef.current !== null) {
       clearInterval(monitorIntervalRef.current);
       monitorIntervalRef.current = null;
