@@ -111,53 +111,50 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
   const endPatrol = async () => {
     if (!activePatrol) return;
 
-    setActivePatrol((prev) => {
-      if (!prev) return null;
-      
-      // Create log entries for missed points
-      const missedPoints = prev.patrolPoints
-        .filter((point) => !prev.completedPoints.includes(point.id));
-      
-      if (missedPoints.length > 0) {
-        missedPoints.forEach(point => {
-          addLogEntry({
-            patrolId: prev.id,
-            pointId: point.id,
-            pointName: point.name,
-            timestamp: new Date().toISOString(),
-            status: 'missed',
-          });
+    const updatedPatrol = {
+      ...activePatrol,
+      status: 'completed' as const,
+      endTime: new Date().toISOString(),
+    };
+
+    // Create log entries for missed points
+    const missedPoints = updatedPatrol.patrolPoints
+      .filter((point) => !updatedPatrol.completedPoints.includes(point.id));
+    
+    if (missedPoints.length > 0) {
+      missedPoints.forEach(point => {
+        addLogEntry({
+          patrolId: updatedPatrol.id,
+          pointId: point.id,
+          pointName: point.name,
+          timestamp: new Date().toISOString(),
+          status: 'missed',
         });
-      }
-      
-      const updated: PatrolSession = {
-        ...prev,
-        status: 'completed' as const,
-        endTime: new Date().toISOString(),
-      };
-      
-      // Update in localStorage
-      localStorage.setItem('activePatrol', JSON.stringify(updated));
-      
-      return updated;
-    });
+      });
+    }
 
-    // Создаем отчет
-    const report = formatReport(activePatrol.patrolPoints, activePatrol.startTime);
+    // Update in localStorage
+    localStorage.setItem('activePatrol', JSON.stringify(updatedPatrol));
+    setActivePatrol(updatedPatrol);
 
-    // Отправляем отчет
-    await sendNotification({
-      type: 'patrol_completed',
-      message: report
-    });
+    try {
+      // Создаем отчет
+      const report = formatReport(updatedPatrol.patrolPoints, updatedPatrol.startTime);
 
-    // Create a final completed patrol in log
-    setTimeout(() => {
+      // Отправляем отчет
+      await sendNotification({
+        type: 'patrol_completed',
+        message: report
+      });
+
+      // Очищаем активный патруль
       setActivePatrol(null);
-      // Remove from localStorage
       localStorage.removeItem('activePatrol');
       toast.success('Обхід завершено');
-    }, 500);
+    } catch (error) {
+      console.error('Error ending patrol:', error);
+      toast.error('Помилка при завершенні обходу');
+    }
   };
   
   // Функция для проверки и обработки просроченных точек

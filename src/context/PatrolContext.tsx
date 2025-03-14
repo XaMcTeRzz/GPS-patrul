@@ -12,6 +12,7 @@ import { usePatrolPoints } from '@/hooks/usePatrolPoints';
 import { usePatrolLogs } from '@/hooks/usePatrolLogs';
 import { usePatrolSession } from '@/hooks/usePatrolSession';
 import { usePatrolSettings } from '@/hooks/usePatrolSettings';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const PatrolContext = createContext<PatrolContextType | undefined>(undefined);
 
@@ -29,6 +30,8 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const { settings, setSettings, updateSettings } = usePatrolSettings();
   
+  const { sendNotification } = useNotifications();
+  
   const { 
     activePatrol, 
     setActivePatrol, 
@@ -40,7 +43,8 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   } = usePatrolSession({ 
     patrolPoints, 
     addLogEntry,
-    settings
+    settings,
+    sendNotification
   });
 
   // Save to localStorage whenever state changes
@@ -59,50 +63,6 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     localStorage.setItem('patrolSettings', JSON.stringify(settings));
   }, [settings]);
-
-  const sendNotification = async (notification: PatrolNotification) => {
-    const { notificationsEnabled, notificationEmail, telegramBotToken, telegramChatId, smtpSettings } = settings;
-    
-    if (!notificationsEnabled) return;
-
-    try {
-      // Отправка уведомления в Telegram
-      if (telegramBotToken && telegramChatId) {
-        const telegramUrl = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
-        await fetch(telegramUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            chat_id: telegramChatId,
-            text: notification.message,
-            parse_mode: 'HTML',
-          }),
-        });
-      }
-
-      // Отправка уведомления по email
-      if (notificationEmail && smtpSettings) {
-        const emailData = {
-          from: smtpSettings.from,
-          to: notificationEmail,
-          subject: `Патруль: ${notification.type === 'point_expired' ? 'Точка не перевірена' : 'Повідомлення'}`,
-          text: notification.message,
-        };
-
-        await fetch('/api/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(emailData),
-        });
-      }
-    } catch (error) {
-      console.error('Error sending notification:', error);
-    }
-  };
 
   const value: PatrolContextType = {
     patrolPoints,

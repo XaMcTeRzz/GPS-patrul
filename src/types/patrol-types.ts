@@ -34,8 +34,11 @@ export type PatrolSession = {
 export type SmtpSettings = {
   host: string;
   port: number;
-  username: string;
-  password: string;
+  secure: boolean;
+  auth: {
+    user: string;
+    pass: string;
+  };
   from: string;
 };
 
@@ -58,7 +61,7 @@ export type Settings = {
   scheduleEnabled: boolean; // Включено ли расписание
 };
 
-export type NotificationType = 'point_expired' | 'patrol_completed' | 'patrol_started';
+export type NotificationType = 'patrol_started' | 'patrol_completed' | 'point_expired';
 
 export type PatrolNotification = {
   type: NotificationType;
