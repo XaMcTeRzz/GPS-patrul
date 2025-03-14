@@ -1,4 +1,4 @@
-
+import { SmtpSettings } from '@/types/patrol-types';
 import { toast } from 'sonner';
 
 // Function to send a notification via Telegram
@@ -46,13 +46,7 @@ export const sendEmailNotification = async (
   email: string,
   subject: string,
   message: string,
-  smtpSettings?: {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    from: string;
-  }
+  smtpSettings?: SmtpSettings
 ): Promise<boolean> => {
   try {
     if (!email) {
@@ -63,12 +57,12 @@ export const sendEmailNotification = async (
     console.log(`Відправка email на ${email}`, { subject, message });
     
     // If SMTP settings are provided, use them to send email
-    if (smtpSettings && smtpSettings.host && smtpSettings.username && smtpSettings.password) {
+    if (smtpSettings && smtpSettings.host && smtpSettings.auth.user && smtpSettings.auth.pass) {
       console.log('Використання SMTP сервера для відправки', {
         host: smtpSettings.host,
         port: smtpSettings.port,
-        username: smtpSettings.username,
-        hasPassword: Boolean(smtpSettings.password)
+        username: smtpSettings.auth.user,
+        hasPassword: Boolean(smtpSettings.auth.pass)
       });
       
       // In a real application, you would use a server-side API or service
@@ -77,17 +71,17 @@ export const sendEmailNotification = async (
       // Encode credentials and message for the API
       const encodedData = {
         to: email,
-        from: smtpSettings.from || smtpSettings.username,
+        from: smtpSettings.from || smtpSettings.auth.user,
         subject: subject,
         text: message,
         html: message,
         smtpSettings: {
           host: smtpSettings.host,
           port: smtpSettings.port,
-          secure: smtpSettings.port === 465, // true for 465, false for other ports
+          secure: smtpSettings.secure,
           auth: {
-            user: smtpSettings.username,
-            pass: smtpSettings.password,
+            user: smtpSettings.auth.user,
+            pass: smtpSettings.auth.pass,
           },
         }
       };
@@ -97,12 +91,12 @@ export const sendEmailNotification = async (
       
       console.log('Email успішно відправлено через SMTP сервер');
       return true;
-    } else {
-      // Fallback to simple simulation for testing
-      console.log('SMTP налаштування відсутні, тест відправки...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return true;
     }
+    
+    // Fallback to simple simulation for testing
+    console.log('SMTP налаштування відсутні, тест відправки...');
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return true;
   } catch (error) {
     console.error('Помилка при спробі відправки Email:', error);
     return false;
@@ -115,13 +109,7 @@ export const sendMissedPointNotification = async (
   telegramChatId: string | undefined,
   email: string | undefined,
   pointName: string,
-  smtpSettings?: {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    from: string;
-  }
+  smtpSettings?: SmtpSettings
 ): Promise<void> => {
   const message = `⚠️ Увага: Не пройдена точка "${pointName}" на патрульному маршруті!`;
   

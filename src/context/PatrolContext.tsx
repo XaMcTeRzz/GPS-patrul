@@ -30,7 +30,7 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   
   const { settings, setSettings, updateSettings } = usePatrolSettings();
   
-  const { sendNotification } = useNotifications();
+  const { sendNotification } = useNotifications(settings);
   
   const { 
     activePatrol, 

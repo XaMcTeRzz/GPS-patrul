@@ -1,9 +1,6 @@
-import { usePatrol } from '@/context/PatrolContext';
-import { PatrolNotification } from '@/types/patrol-types';
+import { PatrolNotification, Settings } from '@/types/patrol-types';
 
-export const useNotifications = () => {
-  const { settings } = usePatrol();
-
+export const useNotifications = (settings: Settings) => {
   const sendNotification = async (notification: PatrolNotification) => {
     const { notificationsEnabled, notificationEmail, telegramBotToken, telegramChatId, smtpSettings } = settings;
     
