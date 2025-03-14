@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Plus, MapPin } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
-import PatrolPoint from '@/components/PatrolPoint';
+import PatrolPointItem from '@/components/PatrolPointItem';
 import CustomAddPointModal from '@/components/CustomAddPointModal';
 import CustomEditPointModal from '@/components/CustomEditPointModal';
 import { type PatrolPoint as PatrolPointType } from '@/types/patrol-types';
@@ -26,46 +26,32 @@ const Routes = () => {
   };
 
   return (
-    <div className="container pb-20">
-      <div className="flex justify-between items-center mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-medium text-zinc-100">Маршрути обходу</h1>
+    <div className="container max-w-2xl mx-auto px-4 pb-24">
+      <div className="flex justify-between items-center py-6">
+        <h1 className="text-2xl font-semibold text-zinc-100">Точки обходу</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="btn-primary text-sm sm:text-base py-2"
+          className="btn-primary px-4 py-2 rounded-lg"
         >
-          <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
-          Додати точку
+          <Plus className="h-5 w-5" />
         </button>
       </div>
 
       {patrolPoints.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 bg-[#1A1D24] rounded-lg border border-[#2A2F38]">
-          <div className="mb-4">
-            <MapPin className="h-10 w-10 sm:h-14 sm:w-14 mx-auto text-blue-400" />
-          </div>
-          <h3 className="text-lg sm:text-xl font-medium text-zinc-100 mb-2">Немає точок обходу</h3>
-          <p className="text-sm sm:text-base text-zinc-400 mb-4 sm:mb-6 px-4">
-            Додайте першу точку для створення маршруту
+        <div className="text-center py-12">
+          <MapPin className="h-12 w-12 mx-auto text-zinc-600" />
+          <p className="mt-4 text-zinc-400">
+            Додайте першу точку обходу
           </p>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="btn-primary text-sm sm:text-base py-2 inline-flex items-center"
-          >
-            <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
-            Додати точку
-          </button>
         </div>
       ) : (
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-4">
           {patrolPoints.map((point) => (
-            <PatrolPoint
+            <PatrolPointItem
               key={point.id}
               point={point}
-              onEdit={(point) => {
-                setEditingPoint(point);
-                setIsEditModalOpen(true);
-              }}
-              onDelete={(id) => handleDeletePoint(id)}
+              onEdit={handleOpenEditModal}
+              onDelete={handleDeletePoint}
             />
           ))}
         </div>
@@ -79,7 +65,10 @@ const Routes = () => {
 
       <CustomEditPointModal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingPoint(null);
+        }}
         onSave={updatePatrolPoint}
         point={editingPoint}
       />

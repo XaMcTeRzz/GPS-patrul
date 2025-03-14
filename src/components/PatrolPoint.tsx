@@ -27,7 +27,11 @@ const PatrolPoint: React.FC<PatrolPointProps> = ({ point, onComplete }) => {
 
     if (remaining <= 0) {
       if (!notificationSentRef.current) {
-        sendMissedPointNotification(point);
+        sendMissedPointNotification(point, {
+          telegramBotToken: settings.telegramBotToken,
+          telegramChatId: settings.telegramChatId,
+          ...settings.smtpSettings
+        });
         notificationSentRef.current = true;
       }
       return;
@@ -35,7 +39,11 @@ const PatrolPoint: React.FC<PatrolPointProps> = ({ point, onComplete }) => {
 
     timeoutRef.current = setTimeout(() => {
       if (!point.isCompleted && !notificationSentRef.current) {
-        sendMissedPointNotification(point);
+        sendMissedPointNotification(point, {
+          telegramBotToken: settings.telegramBotToken,
+          telegramChatId: settings.telegramChatId,
+          ...settings.smtpSettings
+        });
         notificationSentRef.current = true;
       }
     }, remaining);
@@ -45,7 +53,7 @@ const PatrolPoint: React.FC<PatrolPointProps> = ({ point, onComplete }) => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [point, settings.patrolTimeMinutes, testMode]);
+  }, [point, settings, testMode]);
 
   useEffect(() => {
     if (!location || point.isCompleted) return;

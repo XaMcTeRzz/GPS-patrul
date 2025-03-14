@@ -107,9 +107,28 @@ export const sendEmailNotification = async (
 /**
  * Відправляє повідомлення про пропущену точку патрулювання
  * @param point Точка патрулювання, яка була пропущена
+ * @param settings Налаштування для відправки повідомлень
  */
-export const sendMissedPointNotification = async (point: PatrolPoint) => {
+export const sendMissedPointNotification = async (point: PatrolPoint, settings: SmtpSettings & { telegramBotToken?: string; telegramChatId?: string; }) => {
   try {
+    // Формуємо повідомлення
+    const message = `⚠️ УВАГА: Пропущено точку патрулювання!\n\n` +
+      `📍 Назва: ${point.name}\n` +
+      `📝 Опис: ${point.description}\n` +
+      `⏱️ Час на перевірку: ${point.timeMinutes} хв\n` +
+      `🌍 Координати: ${point.latitude}, ${point.longitude}\n` +
+      `📏 Радіус: ${point.radiusMeters}м`;
+
+    // Відправляємо в Telegram
+    if (settings.telegramBotToken && settings.telegramChatId) {
+      await sendTelegramNotification(
+        settings.telegramBotToken,
+        settings.telegramChatId,
+        message
+      );
+    }
+
+    // Відправляємо через API
     const response = await fetch('/api/notifications', {
       method: 'POST',
       headers: {
@@ -130,9 +149,10 @@ export const sendMissedPointNotification = async (point: PatrolPoint) => {
     });
 
     if (!response.ok) {
-      throw new Error('Помилка відправки повідомлення');
+      throw new Error('Помилка відправки повідомлення через API');
     }
   } catch (error) {
     console.error('Помилка відправки повідомлення:', error);
+    toast.error('Помилка відправки повідомлення про пропущену точку');
   }
 };

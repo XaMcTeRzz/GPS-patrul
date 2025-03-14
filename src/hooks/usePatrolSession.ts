@@ -191,13 +191,14 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       
       // Отправляем уведомление
       if (settings.notificationsEnabled) {
-        await sendMissedPointNotification(
-          settings.telegramBotToken,
-          settings.telegramChatId,
-          settings.notificationEmail,
-          task.pointName,
-          settings.smtpSettings
-        );
+        const point = patrolPoints.find(p => p.id === task.pointId);
+        if (point) {
+          await sendMissedPointNotification(point, {
+            telegramBotToken: settings.telegramBotToken,
+            telegramChatId: settings.telegramChatId,
+            ...settings.smtpSettings
+          });
+        }
       }
       
       // Добавляем запись в журнал
@@ -218,7 +219,7 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       clearInterval(monitorIntervalRef.current);
       monitorIntervalRef.current = null;
     }
-  }, [activePatrol, settings, addLogEntry]);
+  }, [activePatrol, settings, addLogEntry, patrolPoints]);
   
   // Функция для настройки мониторинга точек
   const setupPointsMonitoring = useCallback(() => {

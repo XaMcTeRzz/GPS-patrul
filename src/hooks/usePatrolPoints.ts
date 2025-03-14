@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { PatrolPoint } from '@/types/patrol-types';
@@ -20,7 +19,12 @@ export const usePatrolPoints = () => {
       timeMinutes: point.timeMinutes || 5, // Default to 5 minutes if not specified
     };
     
-    setPatrolPoints((prev) => [...prev, newPoint]);
+    setPatrolPoints((prev) => {
+      const updated = [...prev, newPoint];
+      localStorage.setItem('patrolPoints', JSON.stringify(updated));
+      return updated;
+    });
+    
     toast.success('Точку додано успішно');
     setLoading(false);
   };
@@ -28,11 +32,13 @@ export const usePatrolPoints = () => {
   // Update an existing patrol point
   const updatePatrolPoint = (id: string, updatedData: Partial<PatrolPoint>) => {
     setLoading(true);
-    setPatrolPoints((prev) =>
-      prev.map((point) =>
+    setPatrolPoints((prev) => {
+      const updated = prev.map((point) =>
         point.id === id ? { ...point, ...updatedData } : point
-      )
-    );
+      );
+      localStorage.setItem('patrolPoints', JSON.stringify(updated));
+      return updated;
+    });
     toast.success('Точку оновлено успішно');
     setLoading(false);
   };
@@ -40,7 +46,11 @@ export const usePatrolPoints = () => {
   // Delete a patrol point
   const deletePatrolPoint = (id: string) => {
     setLoading(true);
-    setPatrolPoints((prev) => prev.filter((point) => point.id !== id));
+    setPatrolPoints((prev) => {
+      const updated = prev.filter((point) => point.id !== id);
+      localStorage.setItem('patrolPoints', JSON.stringify(updated));
+      return updated;
+    });
     toast.success('Точку видалено успішно');
     setLoading(false);
   };

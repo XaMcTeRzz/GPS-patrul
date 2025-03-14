@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { PatrolPoint } from '@/types/patrol-types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { MapPin, Timer, Target } from 'lucide-react';
 
 type CustomEditPointModalProps = {
   isOpen: boolean;
@@ -13,24 +18,23 @@ const CustomEditPointModal: React.FC<CustomEditPointModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  point
+  point,
 }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [latitude, setLatitude] = useState<number>(0);
-  const [longitude, setLongitude] = useState<number>(0);
-  const [radiusMeters, setRadiusMeters] = useState<number>(50);
-  const [timeMinutes, setTimeMinutes] = useState<number>(5);
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
+  const [radiusMeters, setRadiusMeters] = useState('');
+  const [timeMinutes, setTimeMinutes] = useState('');
 
-  // Initialize form when point changes
   useEffect(() => {
     if (point) {
       setName(point.name);
       setDescription(point.description);
-      setLatitude(point.latitude);
-      setLongitude(point.longitude);
-      setRadiusMeters(point.radiusMeters);
-      setTimeMinutes(point.timeMinutes || 5);
+      setLatitude(point.latitude.toString());
+      setLongitude(point.longitude.toString());
+      setRadiusMeters(point.radiusMeters.toString());
+      setTimeMinutes(point.timeMinutes.toString());
     }
   }, [point]);
 
@@ -38,158 +42,181 @@ const CustomEditPointModal: React.FC<CustomEditPointModalProps> = ({
     e.preventDefault();
     if (!point) return;
 
-    onSave(point.id, {
+    const updatedData: Partial<PatrolPoint> = {
       name,
       description,
-      latitude,
-      longitude,
-      radiusMeters,
-      timeMinutes
-    });
+      latitude: parseFloat(latitude),
+      longitude: parseFloat(longitude),
+      radiusMeters: parseInt(radiusMeters),
+      timeMinutes: parseInt(timeMinutes),
+      radius: parseInt(radiusMeters), // Для сумісності
+      time: parseInt(timeMinutes), // Для сумісності
+    };
+
+    onSave(point.id, updatedData);
     onClose();
+  };
+
+  const handleIncrement = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
+    const numValue = parseInt(value);
+    if (!isNaN(numValue)) {
+      setter((numValue + 1).toString());
+    }
+  };
+
+  const handleDecrement = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
+    const numValue = parseInt(value);
+    if (!isNaN(numValue) && numValue > 1) {
+      setter((numValue - 1).toString());
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="bg-[#1A1D24] border-[#2A2F38] text-zinc-100 sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Редагувати точку</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-zinc-100">
+            Редагування точки
+          </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div className="grid w-full items-center gap-1.5">
-            <label htmlFor="name" className="text-sm font-medium">
-              Назва
-            </label>
-            <input
+
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Назва точки</Label>
+            <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="input"
+              className="bg-[#12151A] border-[#2A2F38] text-zinc-100"
               required
             />
           </div>
 
-          <div className="grid w-full items-center gap-1.5">
-            <label htmlFor="description" className="text-sm font-medium">
-              Опис
-            </label>
-            <textarea
+          <div className="space-y-2">
+            <Label htmlFor="description">Опис</Label>
+            <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="textarea"
-              rows={3}
+              className="bg-[#12151A] border-[#2A2F38] text-zinc-100 min-h-[80px]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="grid w-full items-center gap-1.5">
-              <label htmlFor="latitude" className="text-sm font-medium">
-                Широта
-              </label>
-              <input
-                id="latitude"
-                type="number"
-                step="0.000001"
-                value={latitude}
-                onChange={(e) => setLatitude(Number(e.target.value))}
-                className="input"
-                required
-              />
+            <div className="space-y-2">
+              <Label htmlFor="latitude">Широта</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-zinc-400" />
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                  className="bg-[#12151A] border-[#2A2F38] text-zinc-100 pl-10"
+                  required
+                />
+              </div>
             </div>
-            <div className="grid w-full items-center gap-1.5">
-              <label htmlFor="longitude" className="text-sm font-medium">
-                Довгота
-              </label>
-              <input
-                id="longitude"
-                type="number"
-                step="0.000001"
-                value={longitude}
-                onChange={(e) => setLongitude(Number(e.target.value))}
-                className="input"
-                required
-              />
+
+            <div className="space-y-2">
+              <Label htmlFor="longitude">Довгота</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-2.5 h-5 w-5 text-zinc-400" />
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                  className="bg-[#12151A] border-[#2A2F38] text-zinc-100 pl-10"
+                  required
+                />
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="grid w-full items-center gap-1.5">
-              <label htmlFor="radius" className="text-sm font-medium">
-                Радіус (м)
-              </label>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRadiusMeters(prev => Math.max(1, prev - 1))}
-                  className="btn-outline px-3 py-1"
-                >
-                  -
-                </button>
-                <input
+            <div className="space-y-2">
+              <Label htmlFor="radius">Радіус (метри)</Label>
+              <div className="relative flex">
+                <Target className="absolute left-3 top-2.5 h-5 w-5 text-zinc-400" />
+                <Input
                   id="radius"
                   type="number"
                   min="1"
                   value={radiusMeters}
-                  onChange={(e) => setRadiusMeters(Number(e.target.value))}
-                  className="input flex-1"
+                  onChange={(e) => setRadiusMeters(e.target.value)}
+                  className="bg-[#12151A] border-[#2A2F38] text-zinc-100 pl-10"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setRadiusMeters(prev => prev + 1)}
-                  className="btn-outline px-3 py-1"
-                >
-                  +
-                </button>
+                <div className="absolute right-0 top-0 h-full flex">
+                  <button
+                    type="button"
+                    onClick={() => handleDecrement(setRadiusMeters, radiusMeters)}
+                    className="px-3 border-l border-[#2A2F38] hover:bg-[#2A2F38] transition-colors"
+                  >
+                    -
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleIncrement(setRadiusMeters, radiusMeters)}
+                    className="px-3 border-l border-[#2A2F38] hover:bg-[#2A2F38] transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="grid w-full items-center gap-1.5">
-              <label htmlFor="timeMinutes" className="text-sm font-medium">
-                Час перевірки (хв)
-              </label>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setTimeMinutes(prev => Math.max(1, prev - 1))}
-                  className="btn-outline px-3 py-1"
-                >
-                  -
-                </button>
-                <input
-                  id="timeMinutes"
+
+            <div className="space-y-2">
+              <Label htmlFor="time">Час (хвилини)</Label>
+              <div className="relative flex">
+                <Timer className="absolute left-3 top-2.5 h-5 w-5 text-zinc-400" />
+                <Input
+                  id="time"
                   type="number"
                   min="1"
                   value={timeMinutes}
-                  onChange={(e) => setTimeMinutes(Number(e.target.value))}
-                  className="input flex-1"
+                  onChange={(e) => setTimeMinutes(e.target.value)}
+                  className="bg-[#12151A] border-[#2A2F38] text-zinc-100 pl-10"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setTimeMinutes(prev => prev + 1)}
-                  className="btn-outline px-3 py-1"
-                >
-                  +
-                </button>
+                <div className="absolute right-0 top-0 h-full flex">
+                  <button
+                    type="button"
+                    onClick={() => handleDecrement(setTimeMinutes, timeMinutes)}
+                    className="px-3 border-l border-[#2A2F38] hover:bg-[#2A2F38] transition-colors"
+                  >
+                    -
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleIncrement(setTimeMinutes, timeMinutes)}
+                    className="px-3 border-l border-[#2A2F38] hover:bg-[#2A2F38] transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <DialogFooter className="mt-6">
-            <button
+          <DialogFooter>
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="btn-outline"
+              className="bg-transparent border-[#2A2F38] text-zinc-100 hover:bg-[#2A2F38] hover:text-zinc-100"
             >
               Скасувати
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn-primary"
+              className="bg-blue-500 text-white hover:bg-blue-600"
             >
               Зберегти
-            </button>
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
