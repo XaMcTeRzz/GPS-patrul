@@ -20,63 +20,34 @@ const PatrolPointItem: React.FC<PatrolPointItemProps> = ({
   onVerify,
   isCompleted = false,
 }) => {
-  const { activePatrol, settings, testMode = false } = usePatrol();
+  const { settings, testMode = false } = usePatrol();
   const [remainingTime, setRemainingTime] = useState<number | null>(null);
-  
-  // Расчет оставшегося времени для точки
+
+  // Оновлюємо час, що залишився
   useEffect(() => {
-    if (!isVerifiable || isCompleted || !activePatrol) return;
-    
-    // Получаем время для точки (в минутах)
-    const timeoutMinutes = point.timeMinutes || settings.patrolTimeMinutes;
-    const timeoutMs = timeoutMinutes * 60 * 1000;
-    
-    // Применяем множитель времени для тестового режима
-    const timeMultiplier = testMode ? 0.1 : 1;
-    
-    // Вычисляем время начала патруля
-    const patrolStartTime = new Date(activePatrol.startTime).getTime();
-    
-    // Вычисляем время истечения для точки
-    const expiryTime = patrolStartTime + (timeoutMs * timeMultiplier);
-    
-    // Обновляем оставшееся время каждую секунду
+    if (!isVerifiable || isCompleted || !point.startTime) return;
+
     const interval = setInterval(() => {
       const now = Date.now();
-      const remaining = Math.max(0, expiryTime - now);
+      const startTime = new Date(point.startTime!).getTime();
+      const timeoutMs = (point.timeMinutes || settings.patrolTimeMinutes) * 60 * 1000 * (testMode ? 0.1 : 1);
+      const remaining = timeoutMs - (now - startTime);
+      
+      setRemainingTime(Math.max(0, remaining));
       
       if (remaining <= 0) {
         clearInterval(interval);
-        setRemainingTime(0);
-      } else {
-        setRemainingTime(remaining);
       }
     }, 1000);
-    
+
     return () => clearInterval(interval);
-  }, [point, isVerifiable, isCompleted, activePatrol, settings, testMode]);
-  
-  // Форматирование оставшегося времени
-  const formatRemainingTime = (ms: number) => {
+  }, [point.startTime, isVerifiable, isCompleted, point.timeMinutes, settings.patrolTimeMinutes, testMode]);
+
+  // Форматуємо час для відображення
+  const formatRemainingTime = (ms: number): string => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-  
-  // Определение цвета индикатора времени
-  const getTimeIndicatorColor = () => {
-    if (remainingTime === null) return '';
-    
-    // Если осталось меньше 20% времени - красный
-    if (remainingTime < (point.timeMinutes || settings.patrolTimeMinutes) * 60000 * 0.2 * (testMode ? 0.1 : 1)) {
-      return 'text-red-500 bg-red-50';
-    }
-    // Если осталось меньше 50% времени - желтый
-    if (remainingTime < (point.timeMinutes || settings.patrolTimeMinutes) * 60000 * 0.5 * (testMode ? 0.1 : 1)) {
-      return 'text-amber-500 bg-amber-50';
-    }
-    // Иначе зеленый
-    return 'text-green-500 bg-green-50';
   };
 
   return (
@@ -85,7 +56,7 @@ const PatrolPointItem: React.FC<PatrolPointItemProps> = ({
         ? 'bg-green-500/10 border-green-500/20 shadow-lg shadow-green-500/5' 
         : 'bg-[#1A1D24] border-[#2A2F38] hover:border-blue-500/20 transition-colors'
     }`}>
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <h3 className="font-medium text-xl sm:text-2xl text-zinc-100 truncate">{point.name}</h3>
           <p className="text-sm sm:text-base text-zinc-400 mt-1 sm:mt-2 line-clamp-2">{point.description}</p>
@@ -116,38 +87,35 @@ const PatrolPointItem: React.FC<PatrolPointItemProps> = ({
           </div>
         </div>
         
-        <div className="flex items-center gap-2 sm:gap-3">
-          {isVerifiable ? (
+        <div className="flex flex-col gap-2 ml-4">
+          {isVerifiable && !isCompleted && (
             <button
               onClick={onVerify}
-              className={`p-3 rounded-lg transition-all flex-1 sm:flex-none ${
-                isCompleted
-                  ? 'bg-green-500/10 text-green-400 cursor-default'
-                  : 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:scale-105 active:scale-100'
-              }`}
-              disabled={isCompleted}
+              className="btn-primary p-2 rounded-lg"
+              title="Перевірити точку"
             >
-              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 mx-auto" />
+              <CheckCircle className="h-6 w-6" />
             </button>
-          ) : (
-            <>
-              {onEdit && (
-                <button
-                  onClick={() => onEdit(point)}
-                  className="p-3 rounded-lg bg-[#12151A] text-blue-400 hover:bg-blue-500/10 hover:scale-105 active:scale-100 transition-all flex-1 sm:flex-none"
-                >
-                  <Edit className="h-5 w-5 sm:h-6 sm:w-6 mx-auto" />
-                </button>
-              )}
-              {onDelete && (
-                <button
-                  onClick={() => onDelete(point.id)}
-                  className="p-3 rounded-lg bg-[#12151A] text-red-400 hover:bg-red-500/10 hover:scale-105 active:scale-100 transition-all flex-1 sm:flex-none"
-                >
-                  <Trash className="h-5 w-5 sm:h-6 sm:w-6 mx-auto" />
-                </button>
-              )}
-            </>
+          )}
+          
+          {onEdit && !isVerifiable && (
+            <button
+              onClick={() => onEdit(point)}
+              className="btn-outline p-2 rounded-lg"
+              title="Редагувати точку"
+            >
+              <Edit className="h-6 w-6" />
+            </button>
+          )}
+          
+          {onDelete && !isVerifiable && (
+            <button
+              onClick={() => onDelete(point.id)}
+              className="btn-outline p-2 rounded-lg text-red-400 hover:text-red-300"
+              title="Видалити точку"
+            >
+              <Trash className="h-6 w-6" />
+            </button>
           )}
         </div>
       </div>

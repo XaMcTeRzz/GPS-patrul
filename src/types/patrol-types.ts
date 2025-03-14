@@ -10,6 +10,7 @@ export type PatrolPoint = {
   isCompleted?: boolean;
   radiusMeters: number;
   timeMinutes: number; // Time allowed for this specific point
+  startTime?: string; // ISO string for point start time
 };
 
 export type LogEntry = {
@@ -61,7 +62,11 @@ export type Settings = {
   scheduleEnabled: boolean; // Включено ли расписание
 };
 
-export type NotificationType = 'patrol_started' | 'patrol_completed' | 'point_expired';
+export enum NotificationType {
+  MISSED_POINT = 'MISSED_POINT',
+  PATROL_STARTED = 'PATROL_STARTED',
+  PATROL_COMPLETED = 'PATROL_COMPLETED',
+}
 
 export type PatrolNotification = {
   type: NotificationType;

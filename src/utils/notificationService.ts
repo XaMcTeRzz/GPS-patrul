@@ -1,5 +1,6 @@
 import { SmtpSettings } from '@/types/patrol-types';
 import { toast } from 'sonner';
+import { PatrolPoint, NotificationType } from '@/types/patrol-types';
 
 // Function to send a notification via Telegram
 export const sendTelegramNotification = async (
@@ -103,50 +104,35 @@ export const sendEmailNotification = async (
   }
 };
 
-// Function to send notifications for missed patrol points
-export const sendMissedPointNotification = async (
-  telegramBotToken: string | undefined,
-  telegramChatId: string | undefined,
-  email: string | undefined,
-  pointName: string,
-  smtpSettings?: SmtpSettings
-): Promise<void> => {
-  const message = `⚠️ Увага: Не пройдена точка "${pointName}" на патрульному маршруті!`;
-  
-  console.log('Відправка сповіщення про пропущену точку', {
-    hasTelegramConfig: Boolean(telegramBotToken && telegramChatId),
-    hasEmail: Boolean(email),
-    hasSmtpSettings: Boolean(smtpSettings?.host),
-    pointName
-  });
-  
-  let telegramSent = false;
-  let emailSent = false;
-  
-  if (telegramBotToken && telegramChatId) {
-    telegramSent = await sendTelegramNotification(telegramBotToken, telegramChatId, message);
-    console.log('Результат відправки в Telegram:', telegramSent);
-  } else {
-    console.log('Не налаштовані параметри Telegram');
-  }
-  
-  if (email) {
-    emailSent = await sendEmailNotification(
-      email,
-      'Пропущена точка патрульного маршруту',
-      message,
-      smtpSettings
-    );
-    console.log('Результат відправки Email:', emailSent);
-  } else {
-    console.log('Не налаштована email адреса');
-  }
-  
-  if (telegramSent || emailSent) {
-    toast.success('Сповіщення про пропущену точку відправлено');
-  } else if (telegramBotToken || email) {
-    toast.error('Не вдалось відправити сповіщення');
-  } else {
-    toast.warning('Налаштуйте Telegram або Email для отримання сповіщень');
+/**
+ * Відправляє повідомлення про пропущену точку патрулювання
+ * @param point Точка патрулювання, яка була пропущена
+ */
+export const sendMissedPointNotification = async (point: PatrolPoint) => {
+  try {
+    const response = await fetch('/api/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: NotificationType.MISSED_POINT,
+        data: {
+          pointName: point.name,
+          pointDescription: point.description,
+          timeMinutes: point.timeMinutes,
+          coordinates: {
+            latitude: point.latitude,
+            longitude: point.longitude,
+          },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Помилка відправки повідомлення');
+    }
+  } catch (error) {
+    console.error('Помилка відправки повідомлення:', error);
   }
 };

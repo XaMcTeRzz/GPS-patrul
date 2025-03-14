@@ -49,13 +49,15 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       return;
     }
 
+    const startTime = new Date().toISOString();
     const newPatrol: PatrolSession = {
       id: uuidv4(),
-      startTime: new Date().toISOString(),
+      startTime,
       status: 'active',
-      patrolPoints: patrolPoints.map(point => ({
+      patrolPoints: patrolPoints.map((point, index) => ({
         ...point,
-        isCompleted: false
+        isCompleted: false,
+        startTime: new Date(Date.parse(startTime) + index * 1000).toISOString() // Додаємо 1 секунду між точками
       })),
       completedPoints: []
     };
