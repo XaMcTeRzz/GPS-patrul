@@ -91,10 +91,11 @@ const PatrolPointItem: React.FC<PatrolPointItemProps> = ({
           {isVerifiable && !isCompleted && (
             <button
               onClick={onVerify}
-              className="btn-primary p-2 rounded-lg"
+              className="btn-primary p-4 rounded-lg flex items-center gap-2 text-lg font-medium hover:bg-blue-600/20"
               title="Перевірити точку"
             >
-              <CheckCircle className="h-6 w-6" />
+              <CheckCircle className="h-8 w-8" />
+              <span>Підтвердити</span>
             </button>
           )}
           
