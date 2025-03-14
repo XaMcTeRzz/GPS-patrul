@@ -692,10 +692,18 @@ const Settings = () => {
         </div>
 
         <div className="bg-card border rounded-lg p-4">
-          <h2 className="text-lg font-medium mb-2">Про програму</h2>
-          <p className="text-sm text-muted-foreground">
-            Контроль обхода периметра v.1.56 by XaMcTeR
-          </p>
+          <h2 className="text-lg font-medium mb-3">Про програму</h2>
+          <div className="space-y-1">
+            <p className="text-base font-medium text-primary">
+              Контроль обхода периметра
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Версія 1.56
+            </p>
+            <p className="text-sm text-blue-500">
+              by XaMcTeR
+            </p>
+          </div>
         </div>
       </div>
 
