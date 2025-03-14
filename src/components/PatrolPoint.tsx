@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Edit2, Trash2, MapPinned, MapPin, Clock, AlertCircle } from 'lucide-react';
 import { type PatrolPoint as PatrolPointType, type PatrolNotification } from '@/types/patrol-types';
 import { usePatrol } from '@/context/PatrolContext';
+import { formatTime, formatCoordinate } from '@/utils/format';
 
 interface PatrolPointProps {
   point: PatrolPointType;
@@ -82,7 +83,11 @@ const PatrolPoint = ({
           <div className="flex flex-wrap gap-2 sm:gap-3 text-sm sm:text-base text-zinc-400">
             <div className="flex items-center space-x-1 sm:space-x-2">
               <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Радіус: {point.radiusMeters}м</span>
+              <span>Координати: {formatCoordinate(point.latitude)}, {formatCoordinate(point.longitude)}</span>
+            </div>
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Радіус: {formatTime(point.radiusMeters)}м</span>
             </div>
             <div className="flex items-center space-x-1 sm:space-x-2">
               <Clock className={`h-4 w-4 sm:h-5 sm:w-5 ${
@@ -92,9 +97,9 @@ const PatrolPoint = ({
                 {timeLeft !== null ? (
                   isExtraTime ? 
                     `Додатковий час: ${timeLeft}с` : 
-                    `Час: ${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(2, '0')}`
+                    `Час: ${formatTime(Math.floor(timeLeft / 60))}:${String(timeLeft % 60).padStart(2, '0')}`
                 ) : (
-                  `Час: ${point.timeMinutes} хв`
+                  `Час: ${formatTime(point.timeMinutes)} хв`
                 )}
               </span>
             </div>

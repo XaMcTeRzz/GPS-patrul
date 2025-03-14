@@ -2,11 +2,14 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { PatrolSession, PatrolPoint, LogEntry, Settings } from '@/types/patrol-types';
 import { sendMissedPointNotification } from '@/utils/notificationService';
+import { v4 as uuidv4 } from 'uuid';
+import { formatReport } from '@/utils/format';
 
 type UsePatrolSessionProps = {
   patrolPoints: PatrolPoint[];
   addLogEntry: (entry: Omit<LogEntry, 'id'>) => void;
   settings: Settings;
+  sendNotification: (notification: any) => Promise<void>;
 };
 
 // Тип для задачи мониторинга точки
@@ -17,7 +20,7 @@ type PointMonitorTask = {
   timeoutMinutes: number;
 };
 
-export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePatrolSessionProps) => {
+export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNotification }: UsePatrolSessionProps) => {
   const [activePatrol, setActivePatrol] = useState<PatrolSession | null>(() => {
     const saved = localStorage.getItem('activePatrol');
     return saved ? JSON.parse(saved) : null;
@@ -31,6 +34,14 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
   const [testMode, setTestMode] = useState(false);
   const timeMultiplier = testMode ? 0.1 : 1; // В тестовом режиме время ускоряется в 10 раз
 
+  // Load active patrol from localStorage on mount
+  useEffect(() => {
+    const savedPatrol = localStorage.getItem('activePatrol');
+    if (savedPatrol) {
+      setActivePatrol(JSON.parse(savedPatrol));
+    }
+  }, []);
+
   // Start a new patrol session
   const startPatrol = () => {
     if (patrolPoints.length === 0) {
@@ -39,15 +50,24 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
     }
 
     const newPatrol: PatrolSession = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       startTime: new Date().toISOString(),
       status: 'active',
-      patrolPoints: [...patrolPoints],
-      completedPoints: [],
+      patrolPoints: patrolPoints.map(point => ({
+        ...point,
+        isCompleted: false
+      })),
+      completedPoints: []
     };
 
     setActivePatrol(newPatrol);
     toast.success('Обхід розпочато');
+    
+    // Отправляем уведомление о начале патруля
+    sendNotification({
+      type: 'patrol_started',
+      message: '🚀 Патрулювання розпочато'
+    });
   };
 
   // Mark a patrol point as completed
@@ -63,6 +83,9 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
       
       const updated = {
         ...prev,
+        patrolPoints: prev.patrolPoints.map(p =>
+          p.id === pointId ? { ...p, isCompleted: true } : p
+        ),
         completedPoints: [...prev.completedPoints, pointId],
       };
       
@@ -85,7 +108,7 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
   };
 
   // End the current patrol
-  const endPatrol = () => {
+  const endPatrol = async () => {
     if (!activePatrol) return;
 
     setActivePatrol((prev) => {
@@ -128,6 +151,15 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings }: UsePat
       localStorage.setItem('activePatrol', JSON.stringify(updated));
       
       return updated;
+    });
+
+    // Создаем отчет
+    const report = formatReport(activePatrol.patrolPoints);
+
+    // Отправляем отчет
+    await sendNotification({
+      type: 'patrol_completed',
+      message: report
     });
 
     // Create a final completed patrol in log
