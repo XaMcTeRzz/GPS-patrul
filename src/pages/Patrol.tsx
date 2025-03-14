@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Check, AlertTriangle, Timer, Clock, Zap, MapPinned } from 'lucide-react';
 import { usePatrol } from '@/context/PatrolContext';
 import Navbar from '@/components/Navbar';
@@ -10,13 +10,16 @@ import { playButtonSound, playCheckpointSound } from '@/utils/sound';
 
 const Patrol = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { 
     activePatrol, 
     completePatrolPoint, 
     endPatrol,
     settings,
     toggleTestMode = () => {},
-    testMode = false
+    testMode = false,
+    startPatrol,
+    patrolPoints
   } = usePatrol();
   
   const [remainingPoints, setRemainingPoints] = useState<string[]>([]);
@@ -32,6 +35,18 @@ const Patrol = () => {
     maximumAge: 10000,
     timeout: 15000
   });
+
+  // Перевіряємо параметр autostart при завантаженні
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const autostart = searchParams.get('autostart');
+    
+    if (autostart === 'true' && !activePatrol && patrolPoints.length > 0) {
+      startPatrol();
+      // Очищаємо параметр autostart з URL
+      navigate('/patrol', { replace: true });
+    }
+  }, [location, activePatrol, startPatrol, patrolPoints, navigate]);
 
   // Redirect if no active patrol
   useEffect(() => {

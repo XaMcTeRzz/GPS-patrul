@@ -16,6 +16,24 @@ export const useScheduledPatrol = () => {
   
   const checkIntervalRef = useRef<number | null>(null);
   
+  // Функція для відкриття браузера на сторінці патрулювання
+  const openPatrolPage = useCallback(() => {
+    // Створюємо URL з параметром autostart
+    const patrolUrl = `${window.location.origin}/patrol?autostart=true`;
+    
+    // Перевіряємо, чи підтримується PWA
+    if ('serviceWorker' in navigator && window.matchMedia('(display-mode: standalone)').matches) {
+      // Якщо додаток вже встановлено як PWA, просто відкриваємо URL
+      window.open(patrolUrl, '_blank');
+    } else {
+      // Якщо це звичайний браузер, відкриваємо URL в новому вікні
+      const newWindow = window.open(patrolUrl, '_blank');
+      if (newWindow) {
+        newWindow.focus();
+      }
+    }
+  }, []);
+  
   // Функция для проверки, нужно ли запустить патрулирование
   const checkSchedule = useCallback(() => {
     if (!settings.scheduleEnabled || activePatrol || patrolPoints.length === 0) {
@@ -33,10 +51,15 @@ export const useScheduledPatrol = () => {
       if (currentHour === schedule.hour && currentMinute === schedule.minute) {
         console.log(`Запуск автоматического патрулирования по расписанию: ${schedule.hour}:${schedule.minute}`);
         toast.info(`Запуск автоматического патрулирования по расписанию: ${schedule.hour}:${schedule.minute.toString().padStart(2, '0')}`);
+        
+        // Відкриваємо браузер перед запуском патрулювання
+        openPatrolPage();
+        
+        // Запускаємо патрулювання
         startPatrol();
       }
     });
-  }, [settings.scheduleEnabled, settings.scheduledPatrols, activePatrol, patrolPoints, startPatrol]);
+  }, [settings.scheduleEnabled, settings.scheduledPatrols, activePatrol, patrolPoints, startPatrol, openPatrolPage]);
   
   // Запускаем проверку расписания каждую минуту
   useEffect(() => {
