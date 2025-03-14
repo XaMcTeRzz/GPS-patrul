@@ -695,12 +695,9 @@ const Settings = () => {
           <h2 className="text-lg font-medium mb-3">Про програму</h2>
           <div className="space-y-1">
             <p className="text-base font-medium text-primary">
-              Контроль обхода периметра
+              v.1.56
             </p>
             <p className="text-sm text-muted-foreground">
-              Версія 1.56
-            </p>
-            <p className="text-sm text-blue-500">
               by XaMcTeR
             </p>
           </div>
