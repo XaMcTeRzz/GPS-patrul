@@ -29,13 +29,13 @@ const Log = () => {
           <ScrollText className="h-6 w-6 mr-2 text-primary" />
           Журнал обходів
         </h1>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground bg-secondary/30 px-3 py-1 rounded-full">
           Всього: {patrolIds.length}
         </span>
       </div>
 
       {patrolIds.length === 0 ? (
-        <div className="bg-card border rounded-lg p-8 text-center">
+        <div className="bg-secondary/20 border-secondary/30 border rounded-lg p-8 text-center backdrop-blur-sm">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-amber-500" />
           <h3 className="text-lg font-medium mb-2">Ще немає записів обходу</h3>
           <p className="text-muted-foreground">
@@ -43,12 +43,14 @@ const Log = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {patrolIds.map((patrolId) => (
-            <div key={patrolId} className="bg-card border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4 border-b pb-3">
+            <div key={patrolId} className="bg-secondary/20 border-secondary/30 border rounded-lg p-4 backdrop-blur-sm hover:bg-secondary/30 transition-colors">
+              <div className="flex items-center justify-between mb-4 border-b border-secondary/30 pb-3">
                 <div className="flex items-center space-x-3">
-                  <Calendar className="h-5 w-5 text-primary" />
+                  <div className="p-2 bg-primary/10 rounded-full">
+                    <Calendar className="h-5 w-5 text-primary" />
+                  </div>
                   <div>
                     <h3 className="font-medium">Обхід #{patrolId.slice(-4)}</h3>
                     <p className="text-sm text-muted-foreground">
@@ -60,7 +62,7 @@ const Log = () => {
                     </p>
                   </div>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm bg-primary/10 text-primary px-3 py-1 rounded-full">
                   Точок: {groupedEntries[patrolId].length}
                 </div>
               </div>
