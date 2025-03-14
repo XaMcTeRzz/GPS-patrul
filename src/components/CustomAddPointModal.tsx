@@ -60,7 +60,9 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
       latitude,
       longitude,
       radiusMeters,
-      timeMinutes
+      timeMinutes,
+      radius: radiusMeters,
+      time: timeMinutes
     });
     onClose();
   };
@@ -157,29 +159,61 @@ const CustomAddPointModal: React.FC<CustomAddPointModalProps> = ({
               <label htmlFor="radius" className="text-sm font-medium">
                 Радіус (м)
               </label>
-              <input
-                id="radius"
-                type="number"
-                min="1"
-                value={radiusMeters}
-                onChange={(e) => setRadiusMeters(Number(e.target.value))}
-                className="input"
-                required
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRadiusMeters(prev => Math.max(1, prev - 1))}
+                  className="btn-outline px-3 py-1"
+                >
+                  -
+                </button>
+                <input
+                  id="radius"
+                  type="number"
+                  min="1"
+                  value={radiusMeters}
+                  onChange={(e) => setRadiusMeters(Number(e.target.value))}
+                  className="input flex-1"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setRadiusMeters(prev => prev + 1)}
+                  className="btn-outline px-3 py-1"
+                >
+                  +
+                </button>
+              </div>
             </div>
             <div className="grid w-full items-center gap-1.5">
               <label htmlFor="timeMinutes" className="text-sm font-medium">
                 Час перевірки (хв)
               </label>
-              <input
-                id="timeMinutes"
-                type="number"
-                min="1"
-                value={timeMinutes}
-                onChange={(e) => setTimeMinutes(Number(e.target.value))}
-                className="input"
-                required
-              />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTimeMinutes(prev => Math.max(1, prev - 1))}
+                  className="btn-outline px-3 py-1"
+                >
+                  -
+                </button>
+                <input
+                  id="timeMinutes"
+                  type="number"
+                  min="1"
+                  value={timeMinutes}
+                  onChange={(e) => setTimeMinutes(Number(e.target.value))}
+                  className="input flex-1"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setTimeMinutes(prev => prev + 1)}
+                  className="btn-outline px-3 py-1"
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
 
