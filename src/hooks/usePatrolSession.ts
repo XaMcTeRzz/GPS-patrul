@@ -34,6 +34,13 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
   const [testMode, setTestMode] = useState(false);
   const timeMultiplier = testMode ? 0.1 : 1; // В тестовом режиме время ускоряется в 10 раз
 
+  // Запит дозволу на показ повідомлень
+  useEffect(() => {
+    if ('Notification' in window) {
+      Notification.requestPermission();
+    }
+  }, []);
+
   // Load active patrol from localStorage on mount
   useEffect(() => {
     const savedPatrol = localStorage.getItem('activePatrol');
@@ -41,6 +48,19 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       setActivePatrol(JSON.parse(savedPatrol));
     }
   }, []);
+
+  // Функція для запуску моніторингу через Service Worker
+  const startBackgroundMonitoring = useCallback((points: PatrolPoint[]) => {
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'START_MONITORING',
+        points: points.map(point => ({
+          ...point,
+          timeMinutes: point.timeMinutes || settings.patrolTimeMinutes
+        }))
+      });
+    }
+  }, [settings.patrolTimeMinutes]);
 
   // Start a new patrol session
   const startPatrol = () => {
@@ -57,7 +77,7 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       patrolPoints: patrolPoints.map((point, index) => ({
         ...point,
         isCompleted: false,
-        startTime: new Date(Date.parse(startTime) + index * 1000).toISOString() // Додаємо 1 секунду між точками
+        startTime: new Date(Date.parse(startTime) + index * 1000).toISOString()
       })),
       completedPoints: []
     };
@@ -65,7 +85,10 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
     setActivePatrol(newPatrol);
     toast.success('Обхід розпочато');
     
-    // Отправляем уведомление о начале патруля
+    // Запускаємо фоновий моніторинг
+    startBackgroundMonitoring(newPatrol.patrolPoints);
+    
+    // Відправляємо повідомлення про початок патруля
     sendNotification({
       type: 'patrol_started',
       message: '🚀 Патрулювання розпочато'
@@ -79,7 +102,6 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
     const point = patrolPoints.find(p => p.id === pointId);
     if (!point) return;
 
-    // Add to completed points
     setActivePatrol((prev) => {
       if (!prev) return null;
       
@@ -91,13 +113,10 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
         completedPoints: [...prev.completedPoints, pointId],
       };
       
-      // Update in localStorage
       localStorage.setItem('activePatrol', JSON.stringify(updated));
-      
       return updated;
     });
 
-    // Create a log entry
     addLogEntry({
       patrolId: activePatrol.id,
       pointId,
@@ -135,21 +154,17 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       });
     }
 
-    // Update in localStorage
     localStorage.setItem('activePatrol', JSON.stringify(updatedPatrol));
     setActivePatrol(updatedPatrol);
 
     try {
-      // Создаем отчет
       const report = formatReport(updatedPatrol.patrolPoints, updatedPatrol.startTime);
-
-      // Отправляем отчет
+      
       await sendNotification({
         type: 'patrol_completed',
         message: report
       });
 
-      // Очищаем активный патруль
       setActivePatrol(null);
       localStorage.removeItem('activePatrol');
       toast.success('Обхід завершено');
