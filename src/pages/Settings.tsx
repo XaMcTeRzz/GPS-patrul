@@ -694,7 +694,7 @@ const Settings = () => {
         <div className="bg-card border rounded-lg p-4">
           <h2 className="text-lg font-medium mb-2">Про програму</h2>
           <p className="text-sm text-muted-foreground">
-            Контроль обходу v1.0
+            Контроль обхода периметра v.1.56 by XaMcTeR
           </p>
         </div>
       </div>
