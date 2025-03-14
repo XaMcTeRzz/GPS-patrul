@@ -58,6 +58,14 @@ export type Settings = {
   scheduleEnabled: boolean; // Включено ли расписание
 };
 
+export type NotificationType = 'point_expired' | 'patrol_completed' | 'patrol_started';
+
+export type PatrolNotification = {
+  type: NotificationType;
+  pointName?: string;
+  message: string;
+};
+
 export type PatrolContextType = {
   patrolPoints: PatrolPoint[];
   addPatrolPoint: (point: Omit<PatrolPoint, 'id'>) => void;
@@ -71,8 +79,9 @@ export type PatrolContextType = {
   settings: Settings;
   updateSettings: (newSettings: Partial<Settings>) => void;
   loading: boolean;
-  toggleTestMode: () => void; // Обязательное свойство для включения/выключения тестового режима
-  testMode: boolean; // Обязательное свойство, указывающее, активен ли тестовый режим
+  toggleTestMode: () => void;
+  testMode: boolean;
+  sendNotification: (notification: PatrolNotification) => Promise<void>;
 };
 
 export const defaultSettings: Settings = {

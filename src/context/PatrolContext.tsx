@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useEffect } from 'react';
-import { PatrolContextType } from '@/types/patrol-types';
+import { v4 as uuidv4 } from 'uuid';
+import { 
+  type PatrolPoint, 
+  type PatrolSession, 
+  type PatrolContextType, 
+  type Settings,
+  type PatrolNotification,
+  defaultSettings 
+} from '@/types/patrol-types';
 import { usePatrolPoints } from '@/hooks/usePatrolPoints';
 import { usePatrolLogs } from '@/hooks/usePatrolLogs';
 import { usePatrolSession } from '@/hooks/usePatrolSession';
@@ -52,6 +60,50 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem('patrolSettings', JSON.stringify(settings));
   }, [settings]);
 
+  const sendNotification = async (notification: PatrolNotification) => {
+    const { notificationsEnabled, notificationEmail, telegramBotToken, telegramChatId, smtpSettings } = settings;
+    
+    if (!notificationsEnabled) return;
+
+    try {
+      // Отправка уведомления в Telegram
+      if (telegramBotToken && telegramChatId) {
+        const telegramUrl = `https://api.telegram.org/bot${telegramBotToken}/sendMessage`;
+        await fetch(telegramUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat_id: telegramChatId,
+            text: notification.message,
+            parse_mode: 'HTML',
+          }),
+        });
+      }
+
+      // Отправка уведомления по email
+      if (notificationEmail && smtpSettings) {
+        const emailData = {
+          from: smtpSettings.from,
+          to: notificationEmail,
+          subject: `Патруль: ${notification.type === 'point_expired' ? 'Точка не перевірена' : 'Повідомлення'}`,
+          text: notification.message,
+        };
+
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(emailData),
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  };
+
   const value: PatrolContextType = {
     patrolPoints,
     addPatrolPoint,
@@ -66,7 +118,8 @@ export const PatrolProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     updateSettings,
     loading,
     toggleTestMode,
-    testMode
+    testMode,
+    sendNotification,
   };
 
   return <PatrolContext.Provider value={value}>{children}</PatrolContext.Provider>;
