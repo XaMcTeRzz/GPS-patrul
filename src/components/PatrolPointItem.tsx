@@ -71,32 +71,34 @@ const PatrolPointItem: React.FC<PatrolPointItemProps> = ({
               <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-blue-400 flex-shrink-0" />
               <span className="truncate">Час: {point.timeMinutes} хв</span>
             </div>
-            
-            {isVerifiable && !isCompleted && remainingTime !== null && (
-              <div className={`flex items-center text-sm sm:text-base px-3 sm:px-4 py-2 rounded-lg flex-shrink-0 ${
-                remainingTime < (point.timeMinutes || settings.patrolTimeMinutes) * 60000 * 0.2 * (testMode ? 0.1 : 1)
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                  : remainingTime < (point.timeMinutes || settings.patrolTimeMinutes) * 60000 * 0.5 * (testMode ? 0.1 : 1)
-                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                    : 'bg-green-500/10 text-green-400 border border-green-500/20'
-              }`}>
-                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
-                <span className="tabular-nums font-medium">{formatRemainingTime(remainingTime)}</span>
-              </div>
-            )}
           </div>
         </div>
         
-        <div className="flex flex-col gap-2 ml-4">
+        <div className="flex flex-col items-center gap-3 ml-4">
           {isVerifiable && !isCompleted && (
-            <button
-              onClick={onVerify}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-lg flex items-center gap-2 text-base font-medium transition-colors shadow-lg shadow-emerald-900/20"
-              title="Перевірити точку"
-            >
-              <CheckCircle className="h-6 w-6" />
-              <span>Підтвердити</span>
-            </button>
+            <>
+              <button
+                onClick={onVerify}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-lg flex items-center gap-2 text-base font-medium transition-colors shadow-lg shadow-emerald-900/20"
+                title="Перевірити точку"
+              >
+                <CheckCircle className="h-6 w-6" />
+                <span>Підтвердити</span>
+              </button>
+              
+              {remainingTime !== null && (
+                <div className={`flex items-center justify-center text-sm sm:text-base px-3 sm:px-4 py-2 rounded-lg w-full ${
+                  remainingTime < (point.timeMinutes || settings.patrolTimeMinutes) * 60000 * 0.2 * (testMode ? 0.1 : 1)
+                    ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    : remainingTime < (point.timeMinutes || settings.patrolTimeMinutes) * 60000 * 0.5 * (testMode ? 0.1 : 1)
+                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      : 'bg-green-500/10 text-green-400 border border-green-500/20'
+                }`}>
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+                  <span className="tabular-nums font-medium">{formatRemainingTime(remainingTime)}</span>
+                </div>
+              )}
+            </>
           )}
           
           {onEdit && !isVerifiable && (
