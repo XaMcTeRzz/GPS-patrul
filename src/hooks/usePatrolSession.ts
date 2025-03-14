@@ -164,72 +164,56 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
     if (!activePatrol || activePatrol.status !== 'active') return;
     
     const now = Date.now();
-    const expiredTasks: PointMonitorTask[] = [];
-    const expiredPointIds = new Set<string>();
+    let hasExpiredPoints = false;
     
-    // Находим просроченные задачи
-    monitorTasksRef.current = monitorTasksRef.current.filter(task => {
-      if (now >= task.expiryTime && 
-          !activePatrol.completedPoints.includes(task.pointId)) {
-        expiredTasks.push(task);
-        expiredPointIds.add(task.pointId);
-        return false;
-      }
-      return true;
-    });
-    
-    // Обрабатываем просроченные задачи
-    for (const task of expiredTasks) {
-      console.log(`Точка "${task.pointName}" не перевірена вчасно! Відправка сповіщення...`);
-      
-      // Проверяем актуальное состояние патруля
-      const currentPatrol = JSON.parse(localStorage.getItem('activePatrol') || 'null');
-      if (!currentPatrol || 
-          currentPatrol.status !== 'active' || 
-          currentPatrol.completedPoints.includes(task.pointId)) {
-        console.log(`Точка "${task.pointName}" вже перевірена або патруль завершено`);
+    // Проверяем каждую точку патруля
+    for (const point of activePatrol.patrolPoints) {
+      // Пропускаем уже завершенные точки
+      if (activePatrol.completedPoints.includes(point.id)) {
         continue;
       }
-      
-      // Отправляем уведомление
-      if (settings.notificationsEnabled) {
-        const point = patrolPoints.find(p => p.id === task.pointId);
-        if (point) {
+
+      // Вычисляем время истечения для точки
+      const startTime = new Date(point.startTime!).getTime();
+      const timeoutMs = (point.timeMinutes || settings.patrolTimeMinutes) * 60 * 1000 * (testMode ? 0.1 : 1);
+      const isExpired = now >= startTime + timeoutMs;
+
+      if (isExpired) {
+        hasExpiredPoints = true;
+        console.log(`Точка "${point.name}" не перевірена вчасно! Відправка сповіщення...`);
+
+        // Отправляем уведомление
+        if (settings.notificationsEnabled) {
           await sendMissedPointNotification(point, {
             telegramBotToken: settings.telegramBotToken,
             telegramChatId: settings.telegramChatId,
             ...settings.smtpSettings
           });
         }
+
+        // Добавляем запись в журнал
+        addLogEntry({
+          patrolId: activePatrol.id,
+          pointId: point.id,
+          pointName: point.name,
+          timestamp: new Date().toISOString(),
+          status: 'delayed',
+          notes: `Не пройдена точка протягом ${point.timeMinutes || settings.patrolTimeMinutes} хвилин`
+        });
+
+        toast.error(`Точка "${point.name}" не перевірена вчасно!`);
       }
-      
-      // Добавляем запись в журнал
-      addLogEntry({
-        patrolId: activePatrol.id,
-        pointId: task.pointId,
-        pointName: task.pointName,
-        timestamp: new Date().toISOString(),
-        status: 'delayed',
-        notes: `Не пройдена точка протягом ${task.timeoutMinutes} хвилин`
-      });
-      
-      toast.error(`Точка "${task.pointName}" не перевірена вчасно!`);
     }
 
-    // Проверяем состояние всех точек
-    const allPoints = activePatrol.patrolPoints;
-    const completedPoints = new Set(activePatrol.completedPoints);
-    
-    // Точка считается обработанной, если она:
-    // 1. Завершена успешно (в completedPoints)
-    // 2. Просрочена (в expiredPointIds)
-    // 3. Не имеет активной задачи мониторинга
-    const allPointsProcessed = allPoints.every(point => {
-      const isCompleted = completedPoints.has(point.id);
-      const isExpired = expiredPointIds.has(point.id);
-      const hasActiveTask = monitorTasksRef.current.some(task => task.pointId === point.id);
-      
-      return isCompleted || isExpired || !hasActiveTask;
+    // Проверяем, все ли точки или просрочены, или завершены
+    const allPointsProcessed = activePatrol.patrolPoints.every(point => {
+      if (activePatrol.completedPoints.includes(point.id)) {
+        return true; // Точка завершена
+      }
+
+      const startTime = new Date(point.startTime!).getTime();
+      const timeoutMs = (point.timeMinutes || settings.patrolTimeMinutes) * 60 * 1000 * (testMode ? 0.1 : 1);
+      return now >= startTime + timeoutMs; // Точка просрочена
     });
 
     // Если все точки обработаны, завершаем патруль
@@ -237,8 +221,7 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       console.log('Всі точки оброблені (завершені або просрочені). Автоматичне завершення патруля...');
       toast.info('Обхід автоматично завершено - час для всіх точок вийшов');
       
-      // Очищаем задачи мониторинга
-      monitorTasksRef.current = [];
+      // Очищаем интервал мониторинга
       if (monitorIntervalRef.current !== null) {
         clearInterval(monitorIntervalRef.current);
         monitorIntervalRef.current = null;
@@ -246,60 +229,27 @@ export const usePatrolSession = ({ patrolPoints, addLogEntry, settings, sendNoti
       
       // Завершаем патруль
       await endPatrol();
-      return; // Выходим после завершения патруля
     }
-    
-    // Если остались активные задачи, продолжаем мониторинг
-    if (monitorTasksRef.current.length === 0 && monitorIntervalRef.current !== null) {
-      clearInterval(monitorIntervalRef.current);
-      monitorIntervalRef.current = null;
-    }
-  }, [activePatrol, settings, addLogEntry, patrolPoints, endPatrol]);
+  }, [activePatrol, settings, addLogEntry, patrolPoints, endPatrol, testMode]);
   
   // Функция для настройки мониторинга точек
   const setupPointsMonitoring = useCallback(() => {
     if (!activePatrol || activePatrol.status !== 'active') return;
     
-    const defaultTimeoutMinutes = settings.patrolTimeMinutes;
-    console.log('Моніторинг пропущених точок налаштований', { 
-      defaultTimeoutMinutes,
-      notificationsEnabled: settings.notificationsEnabled,
-      hasTelegramConfig: Boolean(settings.telegramBotToken && settings.telegramChatId),
-      hasEmail: Boolean(settings.notificationEmail),
-      hasSmtpSettings: Boolean(settings.smtpSettings?.host),
+    console.log('Налаштування моніторингу точок...', {
+      pointsCount: activePatrol.patrolPoints.length,
+      completedCount: activePatrol.completedPoints.length,
       testMode,
-      timeMultiplier
+      timeMultiplier: testMode ? 0.1 : 1
     });
-    
-    // Очищаем предыдущие задачи
-    monitorTasksRef.current = [];
-    
-    // Создаем задачи для каждой непроверенной точки
-    activePatrol.patrolPoints
-      .filter(point => !activePatrol.completedPoints.includes(point.id))
-      .forEach(point => {
-        // Используем время для конкретной точки или время по умолчанию
-        const timeoutMinutes = point.timeMinutes || defaultTimeoutMinutes;
-        const timeoutMs = timeoutMinutes * 60 * 1000 * timeMultiplier;
-        
-        console.log(`Налаштування моніторингу для точки "${point.name}": ${timeoutMinutes} хвилин (${testMode ? 'тестовий режим' : 'звичайний режим'})`);
-        
-        // Добавляем задачу в список
-        monitorTasksRef.current.push({
-          pointId: point.id,
-          pointName: point.name,
-          expiryTime: Date.now() + timeoutMs,
-          timeoutMinutes
-        });
-      });
-    
-    // Запускаем интервал для проверки задач, если есть задачи
-    if (monitorTasksRef.current.length > 0 && monitorIntervalRef.current === null) {
-      // Проверяем каждые 10 секунд (или чаще в тестовом режиме)
-      const checkInterval = testMode ? 1000 : 10000;
+
+    // Запускаем интервал для проверки точек
+    if (monitorIntervalRef.current === null) {
+      const checkInterval = testMode ? 1000 : 10000; // Каждую секунду в тестовом режиме, каждые 10 секунд в обычном
       monitorIntervalRef.current = window.setInterval(checkExpiredPoints, checkInterval);
+      console.log(`Моніторинг запущено з інтервалом ${checkInterval}ms`);
     }
-  }, [activePatrol, settings, checkExpiredPoints, testMode, timeMultiplier]);
+  }, [activePatrol, checkExpiredPoints, testMode]);
   
   // Включение/выключение тестового режима
   const toggleTestMode = useCallback(() => {
